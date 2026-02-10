@@ -1,23 +1,21 @@
 <?php
-require_once 'db.php'; // contains $sheetService & $SPREADSHEET_ID
+require_once 'db.php';
 
-header("Content-Type: application/json");
+header('Content-Type: application/json');
 
 $type = $_GET['type'] ?? '';
 $q    = trim($_GET['q'] ?? '');
 
-if ($q === '' || !in_array($type, ['family', 'name'])) {
-    echo json_encode([]);
+$data = [];
+
+if ($q === '') {
+    echo json_encode($data);
     exit;
 }
 
-$rows = $sheetService
-    ->spreadsheets_values
+$rows = $sheetService->spreadsheets_values
     ->get($SPREADSHEET_ID, 'persons!A2:B')
     ->getValues() ?? [];
-
-$result = [];
-$seen   = [];
 
 foreach ($rows as $r) {
     if (!isset($r[0], $r[1])) continue;
@@ -25,29 +23,21 @@ foreach ($rows as $r) {
     $family = trim($r[0]);
     $name   = trim($r[1]);
 
-    // Case 1: typing FAMILY CODE → show names
+    // 🔹 FAMILY SEARCH → return ALL matching names
     if ($type === 'family' && stripos($family, $q) !== false) {
-        $key = $family . '|' . $name;
-        if (!isset($seen[$key])) {
-            $result[] = [
-                'family' => $family,
-                'name'   => $name
-            ];
-            $seen[$key] = true;
-        }
+        $data[] = [
+            'family' => $family,
+            'name'   => $name
+        ];
     }
 
-    // Case 2: typing NAME → show families
+    // 🔹 NAME SEARCH → return ALL matching families
     if ($type === 'name' && stripos($name, $q) !== false) {
-        $key = $family . '|' . $name;
-        if (!isset($seen[$key])) {
-            $result[] = [
-                'family' => $family,
-                'name'   => $name
-            ];
-            $seen[$key] = true;
-        }
+        $data[] = [
+            'name'   => $name,
+            'family' => $family
+        ];
     }
 }
 
-echo json_encode($result);
+echo json_encode($data);

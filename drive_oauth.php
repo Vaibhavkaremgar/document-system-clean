@@ -1,31 +1,43 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-function getOAuthDriveService() {
-    $client = new Google\Client();
-    $client->setApplicationName('Document System Drive Upload');
-    $client->setScopes(Google\Service\Drive::DRIVE);
-    $client->setAuthConfig(__DIR__ . '/oauth_credentials.json');
-    $client->setAccessType('offline');
+function getOAuthDriveService(){
+
+    $client = new Google_Client();
+    $client->setAuthConfig('credentials.json');
+    $client->setAccessType('offline'); // REQUIRED for refresh token
     $client->setPrompt('select_account consent');
+    $client->addScope(Google_Service_Drive::DRIVE);
 
-    $tokenPath = __DIR__ . '/token.json';
+    $tokenPath = 'token.json';
 
+    // Load existing token
     if (file_exists($tokenPath)) {
-        $accessToken = json_decode(file_get_contents($tokenPath), true);
-        $client->setAccessToken($accessToken);
+        $client->setAccessToken(json_decode(file_get_contents($tokenPath), true));
     }
 
+    // If token expired → refresh or re-auth
     if ($client->isAccessTokenExpired()) {
+
         if ($client->getRefreshToken()) {
-            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+            // Refresh token
+            $client->fetchAccessTokenWithRefreshToken(
+                $client->getRefreshToken()
+            );
         } else {
+            // No refresh token → force login
             $authUrl = $client->createAuthUrl();
-            header('Location: ' . $authUrl);
+            header("Location: ".$authUrl);
             exit;
         }
-        file_put_contents($tokenPath, json_encode($client->getAccessToken()));
+
+        // 🔥 VERY IMPORTANT: save new token
+        file_put_contents(
+            $tokenPath,
+            json_encode($client->getAccessToken())
+        );
     }
 
-    return new Google\Service\Drive($client);
+    return new Google_Service_Drive($client);
 }
+

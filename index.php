@@ -42,6 +42,7 @@ function registerPersonIfNotExists($family,$name,$sheet,$id){
     );
 }
     function getDocuments($family,$name,$sheet,$id){
+
     $rows = $sheet->spreadsheets_values
         ->get($id,'documents_store!A2:F')
         ->getValues() ?? [];
@@ -52,12 +53,16 @@ function registerPersonIfNotExists($family,$name,$sheet,$id){
 
         // ✅ FILTER BY FAMILY + NAME
         if(isset($r[0],$r[1],$r[2],$r[3],$r[4]) &&
-           $r[0] == $family &&
-           strtolower($r[1]) == strtolower($name)){
+           trim($r[0]) === trim($family) &&
+           strtolower(trim($r[1])) === strtolower(trim($name))){
 
-            $docs[$r[2]] = [
-                'file_id'=>$r[3],
-                'file_name'=>$r[4]
+            // 🔥 NORMALIZE DOCUMENT TYPE
+            $key = strtolower(trim($r[2]));
+
+            $docs[$key] = [
+                'file_id'   => $r[3],
+                'file_name' => $r[4],
+                'label'     => $r[2] // keep original for display
             ];
         }
     }
@@ -67,24 +72,27 @@ function registerPersonIfNotExists($family,$name,$sheet,$id){
 
 
 
+
 function getRequiredDocs($dept,$sheet,$id){
 
     $rows = $sheet->spreadsheets_values
         ->get($id,'departments_master!A2:C')
         ->getValues() ?? [];
 
-    $req=[];
+    $req = [];
 
     foreach($rows as $r){
-        if(isset($r[0],$r[1]) && $r[0]==$dept){
-            $req[]=[
-                'name'=>$r[1],
-                'desc'=>$r[2] ?? ''
+        if(isset($r[0], $r[1]) && $r[0] == $dept){
+            $req[] = [
+                'name' => $r[1],
+                'desc' => $r[2] ?? ''   // 👈 THIS IS REQUIRED
             ];
         }
     }
+
     return $req;
 }
+
 
 
 
@@ -396,27 +404,55 @@ $person=null;
 $docs=[];
 $requiredDocs=[];
 $missingDocs=[];
+$errorMsg = '';
 
 if(isset($_POST['check'])){
 
-    $dept=$_POST['department'];
-    $family=$_POST['family_code'];
-    $name=$_POST['name'];
+    $dept   = trim($_POST['department']);
+    $family = trim($_POST['family_code'] ?? '');
+    $name   = trim($_POST['name'] ?? '');
 
-    $person=getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
-    $requiredDocs=getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+    $missingDocs = [];
 
-    if($person){
-        $docs=getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
+    $person = getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
 
-        foreach($requiredDocs as $d){
-    if(!isset($docs[$d['name']])){
-        $missingDocs[] = $d['name'];
-      }
-    }
+    // 🚫 IMPORTANT FIX: invalid combination → show error
+    if(!$person){
+    $errorMsg = "No user found with this Family Code and Name";
+    // ❗ DO NOT return; just stop further processing
+} else {
 
+    $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+    $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
+
+    foreach($requiredDocs as $d){
+        if(strtolower(trim($d['name'])) === 'others') continue;
+
+        $key = strtolower(trim($d['name']));
+
+        if(!isset($docs[$key])){
+            $missingDocs[] = $d['name'];
+        }
     }
 }
+
+
+    // ✅ valid user → continue
+    $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+    $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
+
+    foreach($requiredDocs as $d){
+        if(strtolower(trim($d['name'])) === 'others') continue;
+
+        $key = strtolower(trim($d['name']));
+        if(!isset($docs[$key])){
+            $missingDocs[] = $d['name'];
+        }
+    }
+}
+
+
+
 ?>
 
 
@@ -424,6 +460,12 @@ if(isset($_POST['check'])){
 <html>
 <head>
 <title>Department Document System</title>
+<?php if(!empty($errorMsg)): ?>
+    <div class="box miss">
+        <?= htmlspecialchars($errorMsg) ?>
+    </div>
+<?php endif; ?>
+
 
 <style>
 body{font-family:"Segoe UI";background:linear-gradient(135deg,#e3f2fd,#f8f9fa)}
@@ -489,40 +531,55 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 
 <form method="post" enctype="multipart/form-data" class="box">
 
+<?php
+$othersShown = false;
+?>
+
 <?php foreach($requiredDocs as $doc): ?>
 
-<?php if($doc['name'] == 'Others'): ?>
+    <?php if (strtolower(trim($doc['name'])) === 'others'): ?>
 
-    <b>Others</b>
-    <?php if(!empty($doc['desc'])): ?>
-        <small style="color:#666;">
-            (<?= htmlspecialchars($doc['desc']) ?>)
-        </small>
+        <?php if ($othersShown) continue; ?>
+        <?php $othersShown = true; ?>
+
+        <b>Others</b>
+        <?php if (!empty($doc['desc'])): ?>
+            <small style="color:#666;">
+                (<?= htmlspecialchars($doc['desc']) ?>)
+            </small>
+        <?php endif; ?>
+        <br>
+
+        <input
+            type="file"
+            name="documents_others[]"
+            id="othersFiles"
+            multiple
+        >
+
+        <ul id="othersFileList" style="margin-top:8px;color:#333;"></ul>
+        <br><br>
+
+    <?php else: ?>
+
+        <b><?= htmlspecialchars($doc['name']) ?></b><br>
+        <input
+            type="file"
+            name="documents[<?= htmlspecialchars($doc['name']) ?>]"
+            required
+        >
+        <br><br>
+
     <?php endif; ?>
-    <br>
-
-    <!-- multiple upload only -->
-    <input type="file" name="documents_others[]" multiple><br><br>
-
-<?php else: ?>
-
-    <b><?= htmlspecialchars($doc['name']) ?></b><br>
-    <input type="file" name="documents[<?= htmlspecialchars($doc['name']) ?>]" required><br><br>
-
-<?php endif; ?>
 
 <?php endforeach; ?>
 
-
-
-<input type="hidden" name="family_code" value="<?= $family ?>">
-<input type="hidden" name="name" value="<?= $name ?>">
-<input type="hidden" name="department" value="<?= $dept ?>">
-
 <button name="upload_all">Upload All</button>
+
 </form>
 
 <?php endif; ?>
+
 
 
 <?php if($person): ?>
@@ -636,20 +693,47 @@ document.getElementById("nameInput").addEventListener("keyup", e => {
 });
 
 // Auto-fill name when family selected
+// When family is selected, fill name safely
 document.getElementById("familyInput").addEventListener("change", e => {
+    const option = [...document.getElementById("familyList").options]
+        .find(o => o.value === e.target.value);
+
+    if (option && option.dataset.name) {
+        document.getElementById("nameInput").value = option.dataset.name;
+    }
+});
+
+/*document.getElementById("familyInput").addEventListener("change", e => {
     const option = [...document.getElementById("familyList").options]
         .find(o => o.value === e.target.value);
     if (option) {
         document.getElementById("nameInput").value = option.dataset.name;
     }
 });
+*/
 
 // Auto-fill family when name selected
-document.getElementById("nameInput").addEventListener("change", e => {
-    const option = [...document.getElementById("nameList").options]
+
+  /* document.getElementById("familyInput").addEventListener("change", e => {
+    const option = [...document.getElementById("familyList").options]
         .find(o => o.value === e.target.value);
     if (option) {
-        document.getElementById("familyInput").value = option.dataset.family;
+        document.getElementById("nameInput").value = option.dataset.name;
+    }
+  });
+ */
+
+document.getElementById("othersFiles")?.addEventListener("change", function () {
+
+    const list = document.getElementById("othersFileList");
+    list.innerHTML = "";
+
+    if (this.files.length === 0) return;
+
+    for (let i = 0; i < this.files.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = this.files[i].name;
+        list.appendChild(li);
     }
 });
 </script>
