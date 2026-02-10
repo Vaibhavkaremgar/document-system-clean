@@ -242,7 +242,7 @@ if(isset($_FILES['documents_others'])){
 
 if(isset($_POST['upload_doc'])){
 
-    $family = $_POST['family_code'];
+    $family = $_POST['family_code'] ?? '';
     $name   = $_POST['name'];
     $type   = $_POST['document_type'];
 
@@ -552,9 +552,13 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 </form>
 
 <form method="post" style="display:inline">
-<input type="hidden" name="file_id" value="<?= $doc['file_id'] ?>">
-<button name="delete_doc" class="btn-danger">Delete</button>
+    <input type="hidden" name="file_id" value="<?= htmlspecialchars($doc['file_id']) ?>">
+    <input type="hidden" name="family_code" value="<?= htmlspecialchars($family) ?>">
+    <input type="hidden" name="name" value="<?= htmlspecialchars($name) ?>">
+    <input type="hidden" name="department" value="<?= htmlspecialchars($dept) ?>">
+    <button name="delete_doc" class="btn-danger">Delete</button>
 </form>
+
 
 </div>
 </div>
