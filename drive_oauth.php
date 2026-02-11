@@ -1,19 +1,29 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-function getOAuthDriveService(){
+function getOAuthDriveService() {
 
     $client = new Google_Client();
-    $client->setAuthConfig(json_decode($_ENV['GOOGLE_CREDENTIALS'], true));
-    $client->setAccessType('offline'); // REQUIRED for refresh token
+
+    // ✅ Credentials from Railway env
+    $client->setAuthConfig(
+        json_decode($_ENV['GOOGLE_CREDENTIALS'], true)
+    );
+
+    // ✅ ADD THIS LINE (CRITICAL)
+    $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
+
+    $client->setAccessType('offline'); // required for refresh token
     $client->setPrompt('select_account consent');
     $client->addScope(Google_Service_Drive::DRIVE);
 
-    $tokenPath = 'token.json';
+    $tokenPath = __DIR__ . '/token.json';
 
     // Load existing token
     if (file_exists($tokenPath)) {
-        $client->setAccessToken(json_decode(file_get_contents($tokenPath), true));
+        $client->setAccessToken(
+            json_decode(file_get_contents($tokenPath), true)
+        );
     }
 
     // If token expired → refresh or re-auth
@@ -27,11 +37,11 @@ function getOAuthDriveService(){
         } else {
             // No refresh token → force login
             $authUrl = $client->createAuthUrl();
-            header("Location: ".$authUrl);
+            header("Location: " . $authUrl);
             exit;
         }
 
-        // 🔥 VERY IMPORTANT: save new token
+        // Save updated token
         file_put_contents(
             $tokenPath,
             json_encode($client->getAccessToken())
@@ -40,4 +50,3 @@ function getOAuthDriveService(){
 
     return new Google_Service_Drive($client);
 }
-

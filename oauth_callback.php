@@ -2,9 +2,18 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 $client = new Google\Client();
-$client->setAuthConfig(__DIR__ . '/oauth_credentials.json');
-$client->setRedirectUri('http://localhost/document-system/oauth_callback.php');
+
+// credentials from env
+$client->setAuthConfig(
+    json_decode($_ENV['GOOGLE_CREDENTIALS'], true)
+);
+
+// 🔴 ADD THIS LINE HERE
+$client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
+
 $client->setScopes(Google\Service\Drive::DRIVE_FILE);
+$client->setAccessType('offline');
+$client->setPrompt('consent');
 
 if (!isset($_GET['code'])) {
     exit('Authorization failed');

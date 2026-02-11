@@ -1,29 +1,46 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+require_once __DIR__ . '/drive_oauth.php';
 
-require_once 'drive_oauth.php';
+// Turn off output buffering issues
+while (ob_get_level()) {
+    ob_end_clean();
+}
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    die('File ID missing');
+if (!isset($_GET['id'])) {
+    exit('Missing file ID');
 }
 
 $fileId = $_GET['id'];
-$driveService = getOAuthDriveService();
 
-try {
-    $file = $driveService->files->get($fileId, [
-        'fields' => 'name,mimeType'
-    ]);
+$service = getOAuthDriveService();
 
-    $response = $driveService->files->get($fileId, [
-        'alt' => 'media'
-    ]);
+// Get file metadata
+$file = $service->files->get($fileId, [
+    'fields' => 'name,mimeType,size'
+]);
 
-    header('Content-Type: ' . $file->getMimeType());
-    header('Content-Disposition: attachment; filename="' . $file->getName() . '"');
-    echo $response->getBody()->getContents();
+// Download file content
+$response = $service->files->get($fileId, ['alt' => 'media']);
+$content = $response->getBody()->getContents();
 
-} catch (Exception $e) {
-    echo "ERROR DOWNLOADING FILE: " . $e->getMessage();
+// Safety check (debug)
+if (empty($content)) {
+    header('Content-Type: text/plain');
+    echo 'ERROR: Empty file content';
+    exit;
 }
+
+// Ensure filename has extension
+$filename = $file->getName();
+if (!pathinfo($filename, PATHINFO_EXTENSION)) {
+    $mimeParts = explode('/', $file->getMimeType());
+    $filename .= '.' . ($mimeParts[1] ?? 'bin');
+}
+
+// Headers
+header('Content-Type: ' . $file->getMimeType());
+header('Content-Disposition: attachment; filename="' . $filename . '"');
+header('Content-Length: ' . strlen($content));
+
+echo $content;
+exit;

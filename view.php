@@ -1,34 +1,33 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+require_once __DIR__ . '/drive_oauth.php';
 
-require_once 'drive_oauth.php';
+while (ob_get_level()) {
+    ob_end_clean();
+}
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    die('File ID missing');
+if (!isset($_GET['id'])) {
+    exit('Missing file ID');
 }
 
 $fileId = $_GET['id'];
-$driveService = getOAuthDriveService();
 
-try {
-    // Get metadata (IMPORTANT FLAGS)
-    $file = $driveService->files->get($fileId, [
-        'fields' => 'name,mimeType',
-        'supportsAllDrives' => true
-    ]);
+$service = getOAuthDriveService();
 
-    // Get content
-    $response = $driveService->files->get($fileId, [
-        'alt' => 'media',
-        'supportsAllDrives' => true
-    ]);
+$file = $service->files->get($fileId, [
+    'fields' => 'name,mimeType'
+]);
 
-    header('Content-Type: ' . $file->getMimeType());
-    header('Content-Disposition: inline; filename="' . $file->getName() . '"');
-    echo $response->getBody()->getContents();
+$response = $service->files->get($fileId, ['alt' => 'media']);
+$content = $response->getBody()->getContents();
+
+if (empty($content)) {
+    header('Content-Type: text/plain');
+    echo 'ERROR: Empty file content';
     exit;
-
-} catch (Exception $e) {
-    echo "ERROR: " . $e->getMessage();
 }
+
+header('Content-Type: ' . $file->getMimeType());
+header('Content-Disposition: inline; filename="' . $file->getName() . '"');
+
+echo $content;
+exit;
