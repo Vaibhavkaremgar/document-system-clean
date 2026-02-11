@@ -498,7 +498,39 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 .btn-download { background-color: #198754; }
 
 .btn:hover { opacity: 0.85; }
+
+.doc-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.doc-info{
+    flex:1;
+    font-size:15px;
+}
+
+.doc-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.inline-form{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.inline-form input[type="file"]{
+    width:140px;
+    font-size:12px;
+}
+
 </style>
+
 
 </head>
 <body>
@@ -614,33 +646,36 @@ $othersShown = false;
 <?php foreach($docs as $type=>$doc): ?>
 
 <div class="doc-row">
-<?= $type ?> : <?= htmlspecialchars($doc['file_name']) ?>
-<div>
 
-<a href="view.php?id=<?= urlencode($doc['file_id']) ?>" 
-   target="_blank" 
-   class="btn btn-view">View</a>
+    <div class="doc-info">
+        <?= htmlspecialchars($type) ?> :
+        <?= htmlspecialchars($doc['file_name']) ?>
+    </div>
 
-<a href="download.php?id=<?= $doc['file_id'] ?>" 
-   class="btn btn-download">Download</a>
+    <div class="doc-actions">
 
+        <a href="view.php?id=<?= urlencode($doc['file_id']) ?>"
+           target="_blank"
+           class="btn btn-view">View</a>
 
-<form method="post" enctype="multipart/form-data" style="display:inline">
-<input type="file" name="document" required>
-<input type="hidden" name="old_file_id" value="<?= $doc['file_id'] ?>">
-<button name="replace_doc" class="btn-secondary">Reupload</button>
-</form>
+        <a href="download.php?id=<?= $doc['file_id'] ?>"
+           class="btn btn-download">Download</a>
 
-<form method="post" style="display:inline">
-    <input type="hidden" name="file_id" value="<?= htmlspecialchars($doc['file_id']) ?>">
-    <input type="hidden" name="family_code" value="<?= htmlspecialchars($family) ?>">
-    <input type="hidden" name="name" value="<?= htmlspecialchars($name) ?>">
-    <input type="hidden" name="department" value="<?= htmlspecialchars($dept) ?>">
-    <button name="delete_doc" class="btn-danger">Delete</button>
-</form>
+        <form method="post" enctype="multipart/form-data" class="inline-form">
+            <input type="file" name="document" required>
+            <input type="hidden" name="old_file_id" value="<?= $doc['file_id'] ?>">
+            <button name="replace_doc" class="btn-secondary">Reupload</button>
+        </form>
 
+        <form method="post" class="inline-form">
+            <input type="hidden" name="file_id" value="<?= htmlspecialchars($doc['file_id']) ?>">
+            <input type="hidden" name="family_code" value="<?= htmlspecialchars($family) ?>">
+            <input type="hidden" name="name" value="<?= htmlspecialchars($name) ?>">
+            <input type="hidden" name="department" value="<?= htmlspecialchars($dept) ?>">
+            <button name="delete_doc" class="btn-danger">Delete</button>
+        </form>
 
-</div>
+    </div>
 </div>
 
 <?php endforeach; ?>
