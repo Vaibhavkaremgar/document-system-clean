@@ -4,7 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 function getOAuthDriveService(){
 
     $client = new Google_Client();
-    $client->setAuthConfig('credentials.json');
+    $client->setAuthConfig(json_decode($_ENV['GOOGLE_CREDENTIALS'], true));
     $client->setAccessType('offline'); // REQUIRED for refresh token
     $client->setPrompt('select_account consent');
     $client->addScope(Google_Service_Drive::DRIVE);

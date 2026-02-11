@@ -481,6 +481,24 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 
 
 </style>
+<style>
+.btn {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-right: 6px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+}
+
+.btn-view { background-color: #0d6efd; }
+.btn-download { background-color: #198754; }
+
+.btn:hover { opacity: 0.85; }
+</style>
 
 </head>
 <body>
@@ -599,8 +617,13 @@ $othersShown = false;
 <?= $type ?> : <?= htmlspecialchars($doc['file_name']) ?>
 <div>
 
- |<a href="view.php?id=<?= urlencode($doc['file_id']) ?>" target="_blank">View</a>
-<a href="download.php?id=<?= $doc['file_id'] ?>">Download</a>
+<a href="view.php?id=<?= urlencode($doc['file_id']) ?>" 
+   target="_blank" 
+   class="btn btn-view">View</a>
+
+<a href="download.php?id=<?= $doc['file_id'] ?>" 
+   class="btn btn-download">Download</a>
+
 
 <form method="post" enctype="multipart/form-data" style="display:inline">
 <input type="file" name="document" required>
@@ -658,13 +681,14 @@ function fetchSuggestions(type, value) {
     fetch("search.php?type=" + type + "&q=" + encodeURIComponent(value))
         .then(res => res.json())
         .then(data => {
+
             if (type === "family") {
                 const list = document.getElementById("familyList");
                 list.innerHTML = "";
+
                 data.forEach(item => {
                     const option = document.createElement("option");
                     option.value = item.family;
-                    option.dataset.name = item.name;
                     list.appendChild(option);
                 });
             }
@@ -672,6 +696,7 @@ function fetchSuggestions(type, value) {
             if (type === "name") {
                 const list = document.getElementById("nameList");
                 list.innerHTML = "";
+
                 data.forEach(item => {
                     const option = document.createElement("option");
                     option.value = item.name;
@@ -679,8 +704,10 @@ function fetchSuggestions(type, value) {
                     list.appendChild(option);
                 });
             }
-        });
+        })
+        .catch(err => console.error(err));
 }
+
 
 // When typing family code → suggest names
 document.getElementById("familyInput").addEventListener("keyup", e => {
@@ -693,15 +720,30 @@ document.getElementById("nameInput").addEventListener("keyup", e => {
 });
 
 // Auto-fill name when family selected
-// When family is selected, fill name safely
+// When family is selected, load ALL names for that family
 document.getElementById("familyInput").addEventListener("change", e => {
-    const option = [...document.getElementById("familyList").options]
-        .find(o => o.value === e.target.value);
 
-    if (option && option.dataset.name) {
-        document.getElementById("nameInput").value = option.dataset.name;
-    }
+    const family = e.target.value.trim();
+    const nameList = document.getElementById("nameList");
+    nameList.innerHTML = "";
+
+    document.getElementById("nameInput").value = "";
+
+    if (!family) return;
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.name;   // ✅ show NAMES
+                option.dataset.family = item.family;
+                nameList.appendChild(option);
+            });
+        })
+        .catch(err => console.error(err));
 });
+
 
 /*document.getElementById("familyInput").addEventListener("change", e => {
     const option = [...document.getElementById("familyList").options]
