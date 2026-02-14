@@ -1,4 +1,14 @@
 <?php
+// Check if user is authenticated
+if (!file_exists(__DIR__ . '/token.json')) {
+    echo '<div style="text-align:center; padding:50px;">';
+    echo '<h2>Please sign in with Google to continue</h2>';
+    echo '<a href="login.php" style="display:inline-block; padding:12px 24px; background:#4285f4; color:white; text-decoration:none; border-radius:4px; font-size:16px;">Sign in with Google</a>';
+    echo '</div>';
+    exit;
+}
+?>
+<?php
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors',1);
