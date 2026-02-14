@@ -1,53 +1,34 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-function getOAuthDriveService() {
-
-    $client = new Google_Client();
-
-    // ✅ Credentials from Railway env
-    $client->setAuthConfig(
-        json_decode($_ENV['GOOGLE_CREDENTIALS'], true)
-    );
-
-    // ✅ ADD THIS LINE (CRITICAL)
-    $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
-
-    $client->setAccessType('offline'); // required for refresh token
-    $client->setPrompt('select_account consent');
-    $client->addScope(Google_Service_Drive::DRIVE);
-
+function getOAuthClient() {
+    $client = new Google\Client();
+    
+    $client->setAuthConfig(json_decode($_ENV['GOOGLE_CREDENTIALS'], true));
+    $client->addScope(Google\Service\Drive::DRIVE);
+    $client->addScope(Google\Service\Sheets::SPREADSHEETS);
+    
     $tokenPath = __DIR__ . '/token.json';
-
-    // Load existing token
+    
     if (file_exists($tokenPath)) {
-        $client->setAccessToken(
-            json_decode(file_get_contents($tokenPath), true)
-        );
-    }
-
-    // If token expired → refresh or re-auth
-    if ($client->isAccessTokenExpired()) {
-
-        if ($client->getRefreshToken()) {
-            // Refresh token
-            $client->fetchAccessTokenWithRefreshToken(
-                $client->getRefreshToken()
-            );
-        } 
-        else {
-            // No refresh token → force login
-            $authUrl = $client->createAuthUrl();
-            header("Location: " . $authUrl);
-            exit;
+        $accessToken = json_decode(file_get_contents($tokenPath), true);
+        $client->setAccessToken($accessToken);
+        
+        if ($client->isAccessTokenExpired()) {
+            if ($client->getRefreshToken()) {
+                $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                file_put_contents($tokenPath, json_encode($client->getAccessToken()));
+            }
         }
-
-        // Save updated token
-        file_put_contents(
-            $tokenPath,
-            json_encode($client->getAccessToken())
-        );
     }
+    
+    return $client;
+}
 
-    return new Google_Service_Drive($client);
+function getOAuthDriveService() {
+    return new Google\Service\Drive(getOAuthClient());
+}
+
+function getOAuthSheetsService() {
+    return new Google\Service\Sheets(getOAuthClient());
 }
