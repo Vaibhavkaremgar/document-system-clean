@@ -19,24 +19,11 @@ if (!isset($_GET['code'])) {
         die('Error: ' . $token['error']);
     }
     file_put_contents(__DIR__ . '/token.json', json_encode($token));
-    echo '<h2>✅ Success!</h2>';
+    echo '<h2>Success!</h2>';
     echo '<p>token.json has been created. Your app is now authorized.</p>';
     echo '<p><strong>Next steps:</strong></p>';
-    echo '<ol>';
+    echo '<ul>';
     echo '<li>Delete setup.php from your project</li>';
     echo '<li>Users can now use your app without logging in</li>';
-    echo '</ol>';
+    echo '</ul>';
 }
-```
-
----
-
-## **Step 2: Update Google Cloud Console - Add setup.php to Redirect URIs**
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Navigate to: **APIs & Services** → **Credentials**
-3. Click your **OAuth 2.0 Client ID**
-4. Under **"Authorised redirect URIs"**, click **"+ ADD URI"**
-5. Add:
-```
-   https://document-system-production-1a7e.up.railway.app/setup.php
