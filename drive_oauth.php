@@ -35,12 +35,12 @@ function getOAuthDriveService() {
                 $client->getRefreshToken()
             );
         } 
-        /*else {
+        else {
             // No refresh token → force login
             $authUrl = $client->createAuthUrl();
             header("Location: " . $authUrl);
             exit;
-        }*/
+        }
 
         // Save updated token
         file_put_contents(
