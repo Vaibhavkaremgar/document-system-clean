@@ -17,7 +17,7 @@ function back(){
 }
 
 function getPerson($family,$name,$sheet,$id){
-    $rows=$sheet->spreadsheets_values->get($id,'persons!A2:G')->getValues() ?? [];
+    $rows=$sheet->spreadsheets_values->get($id,'persons!A2:E')->getValues() ?? [];
 
     foreach($rows as $r){
         if(isset($r[0],$r[1]) &&
@@ -29,36 +29,18 @@ function getPerson($family,$name,$sheet,$id){
     return null;
 }
 
-function registerPersonIfNotExists(
-    $family,
-    $name,
-    $dob,
-    $email,
-    $mobile,
-    $gst,
-    $sheet,
-    $id
-){
+function registerPersonIfNotExists($family,$name,$sheet,$id){
     if(getPerson($family,$name,$sheet,$id)) return;
 
     $sheet->spreadsheets_values->append(
         $id,
         'persons!A2',
         new Google\Service\Sheets\ValueRange([
-            'values'=>[[
-                $family,
-                $name,
-                $dob,
-                $email,
-                $mobile,
-                $gst,
-                date('Y-m-d H:i:s')
-            ]]
+            'values'=>[[$family,$name,'','',date('Y-m-d H:i:s')]]
         ]),
         ['valueInputOption'=>'RAW']
     );
 }
-
     function getDocuments($family,$name,$sheet,$id){
 
     $rows = $sheet->spreadsheets_values
@@ -182,32 +164,11 @@ function getOrCreatePersonFolder($drive,$personName,$familyFolderId){
 
 if(isset($_POST['upload_all'])){
 
-   $family = trim($_POST['family_code']);
-   $name   = trim($_POST['name']);
-   $dob    = $_POST['dob'];
-   $email  = $_POST['email'];
-   $mobile = $_POST['mobile'];
-   $gst    = $_POST['gst_no'];
+    $family=$_POST['family_code'];
+    $name=$_POST['name'];
+    $dept=$_POST['department'];
 
-   if(!$family || !$name || !$dob || !$email || !$mobile || !$gst){
-    die("All registration fields are mandatory.");
-}
-   // ✅ REGISTER NEW USER (CORRECT 8 ARGUMENTS)
-   registerPersonIfNotExists(
-       $family,
-       $name,
-       $dob,
-       $email,
-       $mobile,
-       $gst,
-       $sheetService,
-       $SPREADSHEET_ID
-   );
-
-
-
-    //registerPersonIfNotExists($family,$name,$sheetService,$SPREADSHEET_ID);
-    
+    registerPersonIfNotExists($family,$name,$sheetService,$SPREADSHEET_ID);
 
     $drive=getOAuthDriveService();
     $familyFolderId = getOrCreateFamilyFolder($drive,$family,$DRIVE_FOLDER_ID);
@@ -293,7 +254,7 @@ if(isset($_POST['upload_doc'])){
     $name   = $_POST['name'];
     $type   = $_POST['document_type'];
 
-    //registerPersonIfNotExists($family,$name,$sheetService,$SPREADSHEET_ID);
+    registerPersonIfNotExists($family,$name,$sheetService,$SPREADSHEET_ID);
 
     $drive = getOAuthDriveService();
 
@@ -455,12 +416,11 @@ if(isset($_POST['check'])){
 
     $person = getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
 
-    /* 🚫 IMPORTANT FIX: invalid combination → show error
+    // 🚫 IMPORTANT FIX: invalid combination → show error
     if(!$person){
     $errorMsg = "No user found with this G Code and Name";
     // ❗ DO NOT return; just stop further processing
-} */
-    //else {
+} else {
 
     $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
@@ -474,7 +434,7 @@ if(isset($_POST['check'])){
             $missingDocs[] = $d['name'];
         }
     }
-//}
+}
 
 
     // ✅ valid user → continue
@@ -510,7 +470,7 @@ if(isset($_POST['check'])){
 <style>
 body{font-family:"Segoe UI";background:linear-gradient(135deg,#e3f2fd,#f8f9fa)}
 .container{width:900px;margin:40px auto;background:#fff;padding:30px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
-input,select { width: 100%;padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc;border-radius: 6px;font-size: 15px; }
+input,select{width:100%;padding:10px;margin-bottom:15px}
 button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:white}
 .btn-danger{background:#d32f2f}
 .btn-secondary{background:#455a64}
@@ -569,35 +529,6 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     font-size:12px;
 }
 
-.user-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.detail-row {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-}
-
-.label {
-    font-weight: 600;
-    color: #555;
-}
-
-.value {
-    color: #222;
-}
-
-
-
 </style>
 
 
@@ -649,53 +580,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <h3 class="miss">User not exists – Upload Documents</h3>
 
 <form method="post" enctype="multipart/form-data" class="box">
-<h4>New User Registration (All fields required)</h4>
 
-<input
-    type="text"
-    name="family_code"
-    required
-    placeholder="G Code"
->
-
-<input
-    type="text"
-    name="name"
-    required
-    placeholder="Full Name"
->
-
-<input
-    type="date"
-    name="dob"
-    required
->
-
-<input
-    type="email"
-    name="email"
-    required
-    placeholder="Email ID"
->
-
-<input
-    type="tel"
-    name="mobile"
-    required
-    pattern="[0-9]{10}"
-    placeholder="Mobile Number"
->
-
-<input
-    type="text"
-    name="gst_no"
-    required
-    minlength="15"
-    maxlength="15"
-    placeholder="GST Number"
->
-
-<hr>
 <?php
 $othersShown = false;
 ?>
@@ -745,44 +630,15 @@ $othersShown = false;
 
 <?php endif; ?>
 
+
+
 <?php if($person): ?>
 
 <h3 class="ok">User Details</h3>
-
-<div class="box user-details">
-
-    <div class="detail-row">
-        <span class="label">G Code:</span>
-        <span class="value"><?= htmlspecialchars($person[0]) ?></span>
-    </div>
-
-    <div class="detail-row">
-        <span class="label">Name:</span>
-        <span class="value"><?= htmlspecialchars($person[1]) ?></span>
-    </div>
-
-    <div class="detail-row">
-        <span class="label">Date of Birth:</span>
-        <span class="value"><?= htmlspecialchars($person[2]) ?></span>
-    </div>
-
-    <div class="detail-row">
-        <span class="label">Email ID:</span>
-        <span class="value"><?= htmlspecialchars($person[3]) ?></span>
-    </div>
-
-    <div class="detail-row">
-        <span class="label">Mobile Number:</span>
-        <span class="value"><?= htmlspecialchars($person[4]) ?></span>
-    </div>
-
-    <div class="detail-row">
-        <span class="label">GST Number:</span>
-        <span class="value"><?= htmlspecialchars($person[5]) ?></span>
-    </div>
-
+<div class="box">
+<b>Name:</b> <?= $person[1] ?><br>
+<b>Family:</b> <?= $person[0] ?>
 </div>
-
 
 <h3>Uploaded Documents</h3>
 <div class="box">
