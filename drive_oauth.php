@@ -5,12 +5,10 @@ function getOAuthDriveService() {
 
     $client = new Google_Client();
 
-    // ✅ Use ONLY the "web" OAuth config
-    $credentials = json_decode($_ENV['GOOGLE_CREDENTIALS'], true);
-    $client->setAuthConfig($credentials['web']);
-
-    // ❌ DO NOT set redirect URI manually
-    // It already exists in the OAuth config
+    // ✅ OAuth credentials from ENV
+    $client->setClientId($_ENV['GOOGLE_CLIENT_ID'] ?? getenv('GOOGLE_CLIENT_ID'));
+    $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET'] ?? getenv('GOOGLE_CLIENT_SECRET'));
+    $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI'] ?? getenv('GOOGLE_REDIRECT_URI'));
 
     $client->setAccessType('offline');
     $client->setPrompt('consent select_account');
@@ -31,8 +29,7 @@ function getOAuthDriveService() {
                 $client->getRefreshToken()
             );
         } else {
-            $authUrl = $client->createAuthUrl();
-            header("Location: " . $authUrl);
+            header("Location: " . $client->createAuthUrl());
             exit;
         }
 
