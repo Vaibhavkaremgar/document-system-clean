@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
+use Google\Service\Sheets as Google_Service_Sheets;
 
 function getOAuthDriveService() {
 
