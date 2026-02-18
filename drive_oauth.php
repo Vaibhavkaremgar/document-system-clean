@@ -12,7 +12,8 @@ function getOAuthDriveService() {
 
     $client->setAccessType('offline');
     $client->setPrompt('consent select_account');
-    $client->addScope(Google_Service_Drive::DRIVE);
+    $client->addScope(Google_Service_Drive::DRIVE_FILE);
+    $client->addScope(Google_Service_Sheets::SPREADSHEETS);
 
     $tokenPath = __DIR__ . '/token.json';
 
