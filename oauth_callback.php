@@ -1,4 +1,18 @@
 <?php
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Temporary debug - remove after fixing
+echo '<pre>';
+echo 'REDIRECT URI: ' . ($_ENV['GOOGLE_REDIRECT_URI'] ?? getenv('GOOGLE_REDIRECT_URI') ?? 'NOT SET');
+echo '<br>';
+echo 'CLIENT ID: ' . ($_ENV['GOOGLE_CLIENT_ID'] ?? getenv('GOOGLE_CLIENT_ID') ?? 'NOT SET');
+echo '<br>';
+echo 'CLIENT SECRET: ' . (isset($_ENV['GOOGLE_CLIENT_SECRET']) ? 'SET' : 'NOT SET');
+echo '</pre>';
+die();
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 $client = new Google\Client();
