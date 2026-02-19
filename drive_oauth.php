@@ -16,7 +16,7 @@ function getOAuthDriveService() {
     $client->addScope(Google_Service_Drive::DRIVE_FILE);
     $client->addScope(Google_Service_Sheets::SPREADSHEETS);
 
-    $tokenPath = __DIR__ . '/token.json';
+    /*$tokenPath = __DIR__ . '/token.json';
 
     if (file_exists($tokenPath)) {
         $client->setAccessToken(
@@ -38,7 +38,19 @@ function getOAuthDriveService() {
         file_put_contents(
             $tokenPath,
             json_encode($client->getAccessToken())
-        );
+        );*/
+      $tokenJson = getenv('GOOGLE_TOKEN');
+if ($tokenJson) {
+    $client->setAccessToken(json_decode($tokenJson, true));
+}
+if ($client->isAccessTokenExpired()) {
+    if ($client->getRefreshToken()) {
+        $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+    } else {
+        header("Location: " . $client->createAuthUrl());
+        exit;
+    }
+}
     }
 
     return new Google_Service_Drive($client);
