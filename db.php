@@ -16,10 +16,10 @@ $client->setApplicationName('Local Document Management System');
 /*$serviceAccount = json_decode(getenv('GOOGLE_SERVICE_ACCOUNT'), true);
 if (!$serviceAccount) {
     die("Service account JSON is invalid");
-}
+//}
 $client->setAuthConfig($serviceAccount);*/
 $serviceAccountJson = getenv('GOOGLE_SERVICE_ACCOUNT');
-$serviceAccountJson = stripslashes($serviceAccountJson);
+$serviceAccountJson = str_replace("\\n", "\n", $serviceAccountJson);
 $serviceAccount = json_decode($serviceAccountJson, true);
 if (!$serviceAccount) {
     die("Error: " . json_last_error_msg());
