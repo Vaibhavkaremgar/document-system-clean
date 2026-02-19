@@ -19,12 +19,7 @@ if (!$serviceAccount) {
 //}
 $client->setAuthConfig($serviceAccount);*/
 $serviceAccountJson = getenv('GOOGLE_SERVICE_ACCOUNT');
-$serviceAccountJson = str_replace("\\n", "\n", $serviceAccountJson);
-$serviceAccount = json_decode($serviceAccountJson, true);
-if (!$serviceAccount) {
-    die("Error: " . json_last_error_msg());
-}
-$client->setAuthConfig($serviceAccount);
+die("JSON content: " . substr($serviceAccountJson, 0, 100));
 
 // Required scopes
 $client->setScopes([
