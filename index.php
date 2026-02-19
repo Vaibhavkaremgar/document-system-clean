@@ -251,7 +251,7 @@ if(isset($_FILES['documents_others'])){
 
         $fileMeta = new Google\Service\Drive\DriveFile([
             'name' => 'Others_' . $fileName,
-            'parents' => [$folderId]
+            'parents' => [$personFolderId]
         ]);
 
         $created = $drive->files->create($fileMeta, [
