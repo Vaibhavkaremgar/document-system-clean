@@ -3,6 +3,36 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Google\Service\Sheets as Google_Service_Sheets;
 
 function getOAuthDriveService() {
+    $client = new Google_Client();
+    
+    $client->setClientId($_ENV['GOOGLE_CLIENT_ID'] ?? getenv('GOOGLE_CLIENT_ID'));
+    $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET'] ?? getenv('GOOGLE_CLIENT_SECRET'));
+    $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI'] ?? getenv('GOOGLE_REDIRECT_URI'));
+    $client->setAccessType('offline');
+    $client->setPrompt('consent select_account');
+    $client->addScope(Google_Service_Drive::DRIVE_FILE);
+    $client->addScope(Google_Service_Sheets::SPREADSHEETS);
+
+    $tokenJson = getenv('GOOGLE_TOKEN');
+    if ($tokenJson) {
+        $client->setAccessToken(json_decode($tokenJson, true));
+    }
+
+    if ($client->isAccessTokenExpired()) {
+        if ($client->getRefreshToken()) {
+            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+        } else {
+            header("Location: " . $client->createAuthUrl());
+            exit;
+        }
+    }
+
+    return new Google_Service_Drive($client);
+}
+/*require_once __DIR__ . '/vendor/autoload.php';
+use Google\Service\Sheets as Google_Service_Sheets;
+
+function getOAuthDriveService() {
 
     $client = new Google_Client();
 
@@ -39,7 +69,7 @@ function getOAuthDriveService() {
             $tokenPath,
             json_encode($client->getAccessToken())
         );*/
-      $tokenJson = getenv('GOOGLE_TOKEN');
+    /*  $tokenJson = getenv('GOOGLE_TOKEN');
 if ($tokenJson) {
     $client->setAccessToken(json_decode($tokenJson, true));
 }
@@ -53,5 +83,5 @@ if ($client->isAccessTokenExpired()) {
 }
     }
 
-    return new Google_Service_Drive($client);
-}
+    return new Google_Service_Drive($client);*/
+
