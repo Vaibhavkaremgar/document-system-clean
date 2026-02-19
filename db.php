@@ -12,7 +12,9 @@ $client = new Google_Client();
 $client->setApplicationName('Local Document Management System');
 
 // Path to Service Account JSON
-$client->setAuthConfig(__DIR__ . '/service-account.json');
+//$client->setAuthConfig(__DIR__ . '/service-account.json');
+$serviceAccount = json_decode(getenv('GOOGLE_SERVICE_ACCOUNT'), true);
+$client->setAuthConfig($serviceAccount);
 
 // Required scopes
 $client->setScopes([
