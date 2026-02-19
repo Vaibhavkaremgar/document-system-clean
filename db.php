@@ -43,7 +43,7 @@ $driveService = new Google_Service_Drive($client);
 ============================== */
 
 // Google Sheet ID (from Google Sheet URL)
-$SPREADSHEET_ID = '17Lot0YOwP6sqdv9L35zRNPZzUJG8_jFnYhMjBR1AGJk';
+$SPREADSHEET_ID = '1Wm_FE5dr1Z9Ik0p9qDt4-XHougPkUP00CGoMdd-9bDw';
 
 // Google Drive ROOT folder ID (Family_Documents folder)
-$DRIVE_FOLDER_ID = '1CMd7d4CX-W15si1SAuzymgmlu-V4M1so';
+$DRIVE_FOLDER_ID = '1odnEcdCIz_g-Lnvma2IYogFqIl_LBrlA';
