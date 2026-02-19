@@ -1,4 +1,7 @@
 <?php
+if(file_exists(__DIR__ . '/token.json')){
+    die(file_get_contents(__DIR__ . '/token.json'));
+}
 require_once __DIR__ . '/vendor/autoload.php';
 
 $client = new Google\Client();
