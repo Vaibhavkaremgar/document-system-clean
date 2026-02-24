@@ -704,6 +704,32 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     color: #222;
 }
 
+   .autocomplete {
+    position: relative;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.suggestions div {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background: #f1f1f1;
+}
 
 
 </style>
@@ -734,7 +760,11 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     autocomplete="off"
     required
 >
-<datalist id="familyList"></datalist>
+<!--<datalist id="familyList"></datalist>-->
+   <div class="autocomplete">
+    <input id="familyInput" name="family_code" placeholder="G Code" autocomplete="off" required>
+    <div id="familySuggestions" class="suggestions"></div>
+</div>
 
 <input
     id="nameInput"
@@ -744,9 +774,11 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     autocomplete="off"
     required
 >
-<datalist id="nameList"></datalist>
-
-
+<!--<datalist id="nameList"></datalist>-->
+   <div class="autocomplete">
+    <input id="nameInput" name="name" placeholder="Name" autocomplete="off" required>
+    <div id="nameSuggestions" class="suggestions"></div>
+</div>
 
 <button name="check">Check User</button>
 </form>
@@ -962,7 +994,86 @@ $othersShown = false;
 
 </div>
 <script>
-function fetchSuggestions(type, value) {
+function renderSuggestions(container, items, key, input) {
+    container.innerHTML = '';
+
+    if (!items.length) {
+        container.style.display = 'none';
+        return;
+    }
+
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.textContent = item[key];
+
+        div.onclick = () => {
+            input.value = item[key];
+            container.style.display = 'none';
+        };
+
+        container.appendChild(div);
+    });
+
+    container.style.display = 'block';
+}
+
+// FAMILY (G CODE)
+document.getElementById("familyInput").addEventListener("keyup", e => {
+    const value = e.target.value.trim();
+    if (value.length < 1) return;
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(value))
+        .then(res => res.json())
+        .then(data => {
+            renderSuggestions(
+                document.getElementById("familySuggestions"),
+                data,
+                "family",
+                e.target
+            );
+        })
+        .catch(console.error);
+});
+
+// NAME
+document.getElementById("nameInput").addEventListener("keyup", e => {
+    const value = e.target.value.trim();
+    if (value.length < 1) return;
+
+    fetch("search.php?type=name&q=" + encodeURIComponent(value))
+        .then(res => res.json())
+        .then(data => {
+            renderSuggestions(
+                document.getElementById("nameSuggestions"),
+                data,
+                "name",
+                e.target
+            );
+        })
+        .catch(console.error);
+});
+
+// Hide dropdown when clicking outside
+document.addEventListener("click", e => {
+    if (!e.target.closest(".autocomplete")) {
+        document.querySelectorAll(".suggestions")
+            .forEach(s => s.style.display = "none");
+    }
+});
+
+// OTHERS FILE LIST (unchanged)
+document.getElementById("othersFiles")?.addEventListener("change", function () {
+    const list = document.getElementById("othersFileList");
+    list.innerHTML = "";
+
+    for (let i = 0; i < this.files.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = this.files[i].name;
+        list.appendChild(li);
+    }
+});
+</script>
+/*function fetchSuggestions(type, value) {
     if (value.length < 1) return;
 
     fetch("search.php?type=" + type + "&q=" + encodeURIComponent(value))
@@ -993,22 +1104,22 @@ function fetchSuggestions(type, value) {
             }
         })
         .catch(err => console.error(err));
-}
+}*/
 
 
 // When typing family code → suggest names
-document.getElementById("familyInput").addEventListener("keyup", e => {
+/*document.getElementById("familyInput").addEventListener("keyup", e => {
     fetchSuggestions("family", e.target.value);
-});
+});*/
 
 // When typing name → suggest family codes
-document.getElementById("nameInput").addEventListener("keyup", e => {
+/*document.getElementById("nameInput").addEventListener("keyup", e => {
     fetchSuggestions("name", e.target.value);
-});
+});*/
 
 // Auto-fill name when family selected
 // When family is selected, load ALL names for that family
-document.getElementById("familyInput").addEventListener("change", e => {
+/*document.getElementById("familyInput").addEventListener("change", e => {
 
     const family = e.target.value.trim();
     const nameList = document.getElementById("nameList");
@@ -1029,7 +1140,7 @@ document.getElementById("familyInput").addEventListener("change", e => {
             });
         })
         .catch(err => console.error(err));
-});
+});*/
 
 
 /*document.getElementById("familyInput").addEventListener("change", e => {
@@ -1052,7 +1163,7 @@ document.getElementById("familyInput").addEventListener("change", e => {
   });
  */
 
-document.getElementById("othersFiles")?.addEventListener("change", function () {
+/*document.getElementById("othersFiles")?.addEventListener("change", function () {
 
     const list = document.getElementById("othersFileList");
     list.innerHTML = "";
@@ -1064,8 +1175,8 @@ document.getElementById("othersFiles")?.addEventListener("change", function () {
         li.textContent = this.files[i].name;
         list.appendChild(li);
     }
-});
-</script>
+});*/
+
 
 
 
