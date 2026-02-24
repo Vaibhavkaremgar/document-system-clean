@@ -16,7 +16,7 @@ function back(){
     exit;
 }
 
-function getPerson($family,$name,$sheet,$id){
+/*function getPerson($family,$name,$sheet,$id){
     $rows=$sheet->spreadsheets_values->get($id,'persons!A2:G')->getValues() ?? [];
 
     foreach($rows as $r){
@@ -27,6 +27,30 @@ function getPerson($family,$name,$sheet,$id){
         }
     }
     return null;
+}*/
+function getPerson($family, $name, $sheet, $id){
+
+    // B = G Code, C = Name, D..G = other details
+    $rows = $sheet->spreadsheets_values
+        ->get($id, 'persons!B2:G')
+        ->getValues() ?? [];
+
+    foreach ($rows as $r) {
+
+        if (!isset($r[0], $r[1])) continue;
+
+        $sheetFamily = trim($r[0]); // G Code (column B)
+        $sheetName   = trim($r[1]); // Name   (column C)
+
+        if (
+            $sheetFamily === trim($family) &&
+            strcasecmp($sheetName, $name) === 0
+        ) {
+            return $r; // ✅ user found
+        }
+    }
+
+    return null; // ❌ user not found
 }
 
 function registerPersonIfNotExists(
