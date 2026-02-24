@@ -695,7 +695,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <option>Claims</option>
 </select>
 
-<input
+<!--<input
     id="familyInput"
     name="family_code"
     list="familyList"
@@ -713,12 +713,31 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     autocomplete="off"
     required
 >
-<datalist id="nameList"></datalist>
+<datalist id="nameList"></datalist> -->
 
+<input
+    id="familyInput"
+    name="family_code"
+    list="familyList"
+    placeholder="G Code"
+    autocomplete="off"
+    required
+>
+<datalist id="familyList"></datalist>
 
+<select
+    id="nameSelect"
+    name="name"
+    required
+    disabled
+>
+    <option value="">-- Select Name --</option>
+</select>
 
 <button name="check">Check User</button>
 </form>
+
+
 
 
 <?php if(isset($_POST['check']) && !$person): ?>
@@ -930,9 +949,47 @@ $othersShown = false;
 <?php endif; ?>
 
 </div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const familyInput = document.getElementById("familyInput");
+    const nameSelect  = document.getElementById("nameSelect");
+
+    familyInput.addEventListener("input", function () {
+
+        const family = familyInput.value.trim();
+        nameSelect.innerHTML = '<option value="">-- Select Name --</option>';
+        nameSelect.disabled = true;
+
+        if (!family) return;
+
+        fetch("search.php?type=family&q=" + encodeURIComponent(family))
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.length === 0) return;
+
+                nameSelect.disabled = false;
+
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.name;
+                    option.textContent = item.name;
+                    nameSelect.appendChild(option);
+                });
+
+                // auto-select if only one name
+                if (data.length === 1) {
+                    nameSelect.value = data[0].name;
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+});
+</script>
+
+/*document.addEventListener("DOMContentLoaded", function () {
 
     const familyInput = document.getElementById("familyInput");
     const nameInput   = document.getElementById("nameInput");
@@ -989,8 +1046,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
-});
-</script>
+});*/
+
 </body>
 </html>
 
