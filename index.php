@@ -685,9 +685,9 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <h2>Department Document System</h2>
 
 <form method="post">
-<select name="department" required>
+<select name="department">
 <!--<option value="">-- Select Department --</option>-->
-<option value="">-- Select Department (Optional) --</option>
+<option value="">-- Select Department</option>
 <option>Life Insurance</option>
 <option>Health Insurance</option>
 <option>Motor Insurance</option>
@@ -932,61 +932,72 @@ $othersShown = false;
 </div>
 
 <script>
-const familyInput = document.getElementById("familyInput");
-const nameInput   = document.getElementById("nameInput");
-const familyList  = document.getElementById("familyList");
-const nameList    = document.getElementById("nameList");
+document.addEventListener("DOMContentLoaded", function () {
 
-// Disable name until G Code selected
-nameInput.disabled = true;
+    const familyInput = document.getElementById("familyInput");
+    const nameInput   = document.getElementById("nameInput");
+    const familyList  = document.getElementById("familyList");
+    const nameList    = document.getElementById("nameList");
 
-/* ===== G CODE AUTOCOMPLETE ===== */
-familyInput.addEventListener("keyup", () => {
+    if (!familyInput || !nameInput || !familyList || !nameList) {
+        console.error("Autocomplete inputs not found in DOM");
+        return;
+    }
 
-    const q = familyInput.value.trim();
-    if (!q) return;
-
-    fetch("search.php?type=family&q=" + encodeURIComponent(q))
-        .then(res => res.json())
-        .then(data => {
-            familyList.innerHTML = "";
-            data.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item.family;
-                familyList.appendChild(option);
-            });
-        })
-        .catch(err => console.error(err));
-});
-
-/* ===== LOAD NAMES WHEN G CODE SELECTED ===== */
-familyInput.addEventListener("change", () => {
-
-    const family = familyInput.value.trim();
-    nameList.innerHTML = "";
-    nameInput.value = "";
+    // Disable name until G Code selected
     nameInput.disabled = true;
 
-    if (!family) return;
+    /* ===== G CODE AUTOCOMPLETE ===== */
+    familyInput.addEventListener("keyup", function () {
 
-    fetch("search.php?type=family&q=" + encodeURIComponent(family))
-        .then(res => res.json())
-        .then(data => {
+        const q = familyInput.value.trim();
+        if (!q) return;
 
-            if (data.length === 0) return;
+        fetch("search.php?type=family&q=" + encodeURIComponent(q))
+            .then(res => res.json())
+            .then(data => {
+                familyList.innerHTML = "";
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.family;
+                    familyList.appendChild(option);
+                });
+            })
+            .catch(err => console.error("Family fetch error:", err));
+    });
 
-            nameInput.disabled = false;
+    /* ===== LOAD NAMES WHEN G CODE SELECTED ===== */
+    familyInput.addEventListener("change", function () {
 
-            data.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item.name;
-                nameList.appendChild(option);
-            });
-        })
-        .catch(err => console.error(err));
+        const family = familyInput.value.trim();
+        nameList.innerHTML = "";
+        nameInput.value = "";
+        nameInput.disabled = true;
+
+        if (!family) return;
+
+        fetch("search.php?type=family&q=" + encodeURIComponent(family))
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.length === 0) {
+                    console.warn("No names for family:", family);
+                    return;
+                }
+
+                nameInput.disabled = false;
+
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.name;
+                    nameList.appendChild(option);
+                });
+            })
+            .catch(err => console.error("Name fetch error:", err));
+    });
+
 });
 </script>
-
 </body>
 </html>
 
