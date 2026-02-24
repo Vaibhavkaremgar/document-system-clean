@@ -523,7 +523,7 @@ if (isset($_POST['check'])) {
             $missingDocs[] = $d['name'];
         }
     }
-}
+//}
 
 
 
