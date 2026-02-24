@@ -15,6 +15,11 @@ function back(){
     header("Location:index.php");
     exit;
 }
+function showVal($arr, $index) {
+    return isset($arr[$index]) && trim((string)$arr[$index]) !== ''
+        ? htmlspecialchars($arr[$index])
+        : '-';
+}
 
 /*function getPerson($family,$name,$sheet,$id){
     $rows=$sheet->spreadsheets_values->get($id,'persons!A2:G')->getValues() ?? [];
@@ -565,7 +570,7 @@ if(isset($_POST['check'])){
     $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
 
-    $missingDocs = [];
+    /*$missingDocs = [];
 
     foreach($requiredDocs as $d){
         if(strtolower(trim($d['name'])) === 'others') continue;
@@ -574,7 +579,25 @@ if(isset($_POST['check'])){
         if(!isset($docs[$key])){
             $missingDocs[] = $d['name'];
         }
+    }*/
+   $missingDocs = [];
+$seen = [];
+
+foreach ($requiredDocs as $d) {
+
+    $docName = trim($d['name']);
+    $key = strtolower($docName);
+
+    if ($key === 'others') continue;
+
+    // 🔒 prevent duplicates
+    if (isset($seen[$key])) continue;
+    $seen[$key] = true;
+
+    if (!isset($docs[$key])) {
+        $missingDocs[] = $docName;
     }
+}
 }
 
 
@@ -837,34 +860,34 @@ $othersShown = false;
 <div class="box user-details">
 
     <div class="detail-row">
-        <span class="label">G Code:</span>
-        <span class="value"><?= htmlspecialchars($person[0]) ?></span>
-    </div>
+    <span class="label">G Code:</span>
+    <span class="value"><?= showVal($person, 1) ?></span>
+</div>
 
-    <div class="detail-row">
-        <span class="label">Name:</span>
-        <span class="value"><?= htmlspecialchars($person[1]) ?></span>
-    </div>
+<div class="detail-row">
+    <span class="label">Name:</span>
+    <span class="value"><?= showVal($person, 2) ?></span>
+</div>
 
-    <div class="detail-row">
-        <span class="label">Date of Birth:</span>
-        <span class="value"><?= htmlspecialchars($person[2]) ?></span>
-    </div>
+<div class="detail-row">
+    <span class="label">Date of Birth:</span>
+    <span class="value"><?= showVal($person, 3) ?></span>
+</div>
 
-    <div class="detail-row">
-        <span class="label">Email ID:</span>
-        <span class="value"><?= htmlspecialchars($person[3]) ?></span>
-    </div>
+<div class="detail-row">
+    <span class="label">Email ID:</span>
+    <span class="value"><?= showVal($person, 4) ?></span>
+</div>
 
-    <div class="detail-row">
-        <span class="label">Mobile Number:</span>
-        <span class="value"><?= htmlspecialchars($person[4]) ?></span>
-    </div>
+<div class="detail-row">
+    <span class="label">Mobile Number:</span>
+    <span class="value"><?= showVal($person, 5) ?></span>
+</div>
 
-    <div class="detail-row">
-        <span class="label">GST Number:</span>
-        <span class="value"><?= htmlspecialchars($person[5]) ?></span>
-    </div>
+<div class="detail-row">
+    <span class="label">GST Number:</span>
+    <span class="value"><?= showVal($person, 6) ?></span>
+</div>
 
 </div>
 
