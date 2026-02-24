@@ -930,8 +930,8 @@ $othersShown = false;
 <?php endif; ?>
 
 </div>
-<script>
-function fetchSuggestions(type, value) {
+
+/*function fetchSuggestions(type, value) {
     if (value.length < 1) return;
 
     fetch("search.php?type=" + type + "&q=" + encodeURIComponent(value))
@@ -974,7 +974,7 @@ document.getElementById("familyInput").addEventListener("keyup", e => {
 /*document.getElementById("nameInput").addEventListener("keyup", e => {
     fetchSuggestions("name", e.target.value);
 });*/
-   document.getElementById("nameInput").addEventListener("keyup", e => {
+   /*document.getElementById("nameInput").addEventListener("keyup", e => {
 
     const family = document.getElementById("familyInput").value.trim();
     if (!family) return; // ⛔ must select G Code first
@@ -1022,7 +1022,7 @@ document.getElementById("familyInput").addEventListener("change", e => {
             });
         })
         .catch(err => console.error(err));
-});
+});*/
 
 
 /*document.getElementById("familyInput").addEventListener("change", e => {
@@ -1045,7 +1045,7 @@ document.getElementById("familyInput").addEventListener("change", e => {
   });
  */
 
-document.getElementById("othersFiles")?.addEventListener("change", function () {
+/*document.getElementById("othersFiles")?.addEventListener("change", function () {
 
     const list = document.getElementById("othersFileList");
     list.innerHTML = "";
@@ -1057,9 +1057,63 @@ document.getElementById("othersFiles")?.addEventListener("change", function () {
         li.textContent = this.files[i].name;
         list.appendChild(li);
     }
+});*/
+
+<script>
+const familyInput = document.getElementById("familyInput");
+const nameInput   = document.getElementById("nameInput");
+const familyList  = document.getElementById("familyList");
+const nameList    = document.getElementById("nameList");
+
+// Disable name field until G Code is selected
+nameInput.disabled = true;
+
+/* ===== G CODE AUTOCOMPLETE ===== */
+familyInput.addEventListener("keyup", () => {
+
+    const q = familyInput.value.trim();
+    if (!q) return;
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(q))
+        .then(res => res.json())
+        .then(data => {
+            familyList.innerHTML = "";
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.family;
+                familyList.appendChild(option);
+            });
+        })
+        .catch(err => console.error(err));
+});
+
+/* ===== LOAD NAMES WHEN G CODE IS SELECTED ===== */
+familyInput.addEventListener("change", () => {
+
+    const family = familyInput.value.trim();
+    nameList.innerHTML = "";
+    nameInput.value = "";
+    nameInput.disabled = true;
+
+    if (!family) return;
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.length === 0) return;
+
+            nameInput.disabled = false;
+
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.name;
+                nameList.appendChild(option);
+            });
+        })
+        .catch(err => console.error(err));
 });
 </script>
-
 
 
 </body>
