@@ -609,7 +609,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <h2>Department Document System</h2>
 
 <form method="post">
-<select name="department" required>
+<select name="department">
 <option value="">-- Select Department --</option>
 <option>Life Insurance</option>
 <option>Health Insurance</option>
