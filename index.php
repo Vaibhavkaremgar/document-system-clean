@@ -599,35 +599,6 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 
 
 </style>
-   <style>
-.autocomplete-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.autocomplete-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: none;
-    max-height: 220px;
-    overflow-y: auto;
-    z-index: 9999;
-    display: none;
-}
-
-.autocomplete-item {
-    padding: 10px;
-    cursor: pointer;
-}
-
-.autocomplete-item:hover {
-    background-color: #f1f1f1;
-}
-</style>
 
 
 </head>
@@ -657,7 +628,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 >
 <datalist id="familyList"></datalist>
 
-<!--<input
+<input
     id="nameInput"
     name="name"
     list="nameList"
@@ -665,18 +636,9 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     autocomplete="off"
     required
 >
-<datalist id="nameList"></datalist>-->
+<datalist id="nameList"></datalist>
 
-<div class="autocomplete-wrapper">
-    <input
-        id="nameInput"
-        name="name"
-        placeholder="Name"
-        autocomplete="off"
-        required
-    >
-    <div id="nameDropdown" class="autocomplete-list"></div>
-</div>
+
 
 <button name="check">Check User</button>
 </form>
@@ -910,7 +872,7 @@ function fetchSuggestions(type, value) {
                 });
             }
 
-           /* if (type === "name") {
+            if (type === "name") {
                 const list = document.getElementById("nameList");
                 list.innerHTML = "";
 
@@ -920,26 +882,7 @@ function fetchSuggestions(type, value) {
                     option.dataset.family = item.family;
                     list.appendChild(option);
                 });
-            }*/
-           if (type === "name") {
-    const dropdown = document.getElementById("nameDropdown");
-    dropdown.innerHTML = "";
-    dropdown.style.display = "block";
-
-    data.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "autocomplete-item";
-        div.textContent = item.name;
-
-        div.onclick = () => {
-            document.getElementById("nameInput").value = item.name;
-            document.getElementById("familyInput").value = item.family;
-            dropdown.style.display = "none";
-        };
-
-        dropdown.appendChild(div);
-    });
-}
+            }
         })
         .catch(err => console.error(err));
 }
@@ -957,7 +900,7 @@ document.getElementById("nameInput").addEventListener("keyup", e => {
 
 // Auto-fill name when family selected
 // When family is selected, load ALL names for that family
-/*document.getElementById("familyInput").addEventListener("change", e => {
+document.getElementById("familyInput").addEventListener("change", e => {
 
     const family = e.target.value.trim();
     const nameList = document.getElementById("nameList");
@@ -1000,65 +943,7 @@ document.getElementById("nameInput").addEventListener("keyup", e => {
     }
   });
  */
-document.getElementById("familyInput").addEventListener("change", e => {
 
-    const family = e.target.value.trim();
-    const dropdown = document.getElementById("nameDropdown");
-    const nameInput = document.getElementById("nameInput");
-
-    dropdown.innerHTML = "";
-    nameInput.value = "";
-
-    if (!family) return;
-
-    fetch("search.php?type=family&q=" + encodeURIComponent(family))
-        .then(res => res.json())
-        .then(data => {
-
-            if (data.length === 0) {
-                dropdown.style.display = "none";
-                return;
-            }
-
-            dropdown.style.display = "block";
-
-            data.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "autocomplete-item";
-                div.textContent = item.name;
-
-                div.onclick = () => {
-                    nameInput.value = item.name;
-                    document.getElementById("familyInput").value = item.family;
-                    dropdown.style.display = "none";
-                };
-
-                dropdown.appendChild(div);
-            });
-        })
-        .catch(console.error);
-});
-   if (type === "name") {
-    const dropdown = document.getElementById("nameDropdown");
-    if (!dropdown) return; // 🛡 safety
-
-    dropdown.innerHTML = "";
-    dropdown.style.display = "block";
-
-    data.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "autocomplete-item";
-        div.textContent = item.name;
-
-        div.onclick = () => {
-            document.getElementById("nameInput").value = item.name;
-            document.getElementById("familyInput").value = item.family;
-            dropdown.style.display = "none";
-        };
-
-        dropdown.appendChild(div);
-    });
-}
 document.getElementById("othersFiles")?.addEventListener("change", function () {
 
     const list = document.getElementById("othersFileList");
@@ -1070,11 +955,6 @@ document.getElementById("othersFiles")?.addEventListener("change", function () {
         const li = document.createElement("li");
         li.textContent = this.files[i].name;
         list.appendChild(li);
-    }
-});
-   document.addEventListener("click", function (e) {
-    if (!e.target.closest(".autocomplete-wrapper")) {
-        document.getElementById("nameDropdown").style.display = "none";
     }
 });
 </script>
