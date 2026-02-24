@@ -558,9 +558,6 @@ $errorMsg = '';
 
 if(isset($_POST['check'])){
 
-    /*$dept   = trim($_POST['department'] ?? '');
-    $family = trim($_POST['family_code'] ?? '');
-    $name   = trim($_POST['name'] ?? '');*/
    $dept   = trim((string)($_POST['department'] ?? ''));
    $family = trim((string)($_POST['family_code'] ?? ''));
    $name   = trim((string)($_POST['name'] ?? ''));
@@ -1073,113 +1070,6 @@ document.getElementById("othersFiles")?.addEventListener("change", function () {
     }
 });
 </script>
-/*function fetchSuggestions(type, value) {
-    if (value.length < 1) return;
-
-    fetch("search.php?type=" + type + "&q=" + encodeURIComponent(value))
-        .then(res => res.json())
-        .then(data => {
-
-            if (type === "family") {
-                const list = document.getElementById("familyList");
-                list.innerHTML = "";
-
-                data.forEach(item => {
-                    const option = document.createElement("option");
-                    option.value = item.family;
-                    list.appendChild(option);
-                });
-            }
-
-            if (type === "name") {
-                const list = document.getElementById("nameList");
-                list.innerHTML = "";
-
-                data.forEach(item => {
-                    const option = document.createElement("option");
-                    option.value = item.name;
-                    option.dataset.family = item.family;
-                    list.appendChild(option);
-                });
-            }
-        })
-        .catch(err => console.error(err));
-}*/
-
-
-// When typing family code → suggest names
-/*document.getElementById("familyInput").addEventListener("keyup", e => {
-    fetchSuggestions("family", e.target.value);
-});*/
-
-// When typing name → suggest family codes
-/*document.getElementById("nameInput").addEventListener("keyup", e => {
-    fetchSuggestions("name", e.target.value);
-});*/
-
-// Auto-fill name when family selected
-// When family is selected, load ALL names for that family
-/*document.getElementById("familyInput").addEventListener("change", e => {
-
-    const family = e.target.value.trim();
-    const nameList = document.getElementById("nameList");
-    nameList.innerHTML = "";
-
-    document.getElementById("nameInput").value = "";
-
-    if (!family) return;
-
-    fetch("search.php?type=family&q=" + encodeURIComponent(family))
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item.name;   // ✅ show NAMES
-                option.dataset.family = item.family;
-                nameList.appendChild(option);
-            });
-        })
-        .catch(err => console.error(err));
-});*/
-
-
-/*document.getElementById("familyInput").addEventListener("change", e => {
-    const option = [...document.getElementById("familyList").options]
-        .find(o => o.value === e.target.value);
-    if (option) {
-        document.getElementById("nameInput").value = option.dataset.name;
-    }
-});
-*/
-
-// Auto-fill family when name selected
-
-  /* document.getElementById("familyInput").addEventListener("change", e => {
-    const option = [...document.getElementById("familyList").options]
-        .find(o => o.value === e.target.value);
-    if (option) {
-        document.getElementById("nameInput").value = option.dataset.name;
-    }
-  });
- */
-
-/*document.getElementById("othersFiles")?.addEventListener("change", function () {
-
-    const list = document.getElementById("othersFileList");
-    list.innerHTML = "";
-
-    if (this.files.length === 0) return;
-
-    for (let i = 0; i < this.files.length; i++) {
-        const li = document.createElement("li");
-        li.textContent = this.files[i].name;
-        list.appendChild(li);
-    }
-});*/
-
-
-
-
 </body>
 </html>
 
