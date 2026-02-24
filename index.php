@@ -16,7 +16,7 @@ function back(){
     exit;
 }
 
-function getPerson($family,$name,$sheet,$id){
+/*function getPerson($family,$name,$sheet,$id){
     $rows=$sheet->spreadsheets_values->get($id,'persons!A2:G')->getValues() ?? [];
 
     foreach($rows as $r){
@@ -26,6 +26,28 @@ function getPerson($family,$name,$sheet,$id){
             return $r;
         }
     }
+    return null;
+}*/
+function getPerson($family,$name,$sheet,$id){
+
+    $rows = $sheet->spreadsheets_values
+        ->get($id,'persons!A2:G')
+        ->getValues() ?? [];
+
+    foreach ($rows as $r) {
+
+        // indexes based on your sheet
+        // [1] = G CODE
+        // [2] = NAME
+        if (
+            isset($r[1], $r[2]) &&
+            trim($r[1]) === trim($family) &&
+            strcasecmp(trim($r[2]), trim($name)) === 0
+        ) {
+            return $r;
+        }
+    }
+
     return null;
 }
 
