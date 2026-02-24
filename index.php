@@ -439,7 +439,7 @@ if(isset($_POST['replace_doc'])){
    CHECK USER
 ================================= */
 
-$person=null;
+/*$person=null;
 $docs=[];
 $requiredDocs=[];
 $missingDocs=[];
@@ -475,7 +475,7 @@ $errorMsg = '';
         }
     }*/
 //}
-if (isset($_POST['check'])) {
+/*if (isset($_POST['check'])) {
 
     $dept   = trim($_POST['department'] ?? '');
     $family = trim($_POST['family_code'] ?? '');
@@ -524,7 +524,49 @@ if (isset($_POST['check'])) {
         }
     }
 //}
+*/
+/* =================================
+   CHECK USER (FINAL FIXED LOGIC)
+================================= */
 
+if (isset($_POST['check'])) {
+
+    $dept   = trim($_POST['department'] ?? '');
+    $family = trim($_POST['family_code'] ?? '');
+    $name   = trim($_POST['name'] ?? '');
+
+    $person = getPerson($family, $name, $sheetService, $SPREADSHEET_ID);
+
+    if (!$person) {
+
+        // ❌ Invalid G Code + Name
+        $errorMsg = "No user found with this G Code and Name";
+
+    } else {
+
+        // ✅ User exists → always show details
+        $docs = getDocuments($family, $name, $sheetService, $SPREADSHEET_ID);
+
+        // Reset arrays
+        $requiredDocs = [];
+        $missingDocs  = [];
+
+        // ✅ Validate documents ONLY if department selected
+        if (!empty($dept)) {
+
+            $requiredDocs = getRequiredDocs($dept, $sheetService, $SPREADSHEET_ID);
+
+            foreach ($requiredDocs as $d) {
+                if (strtolower(trim($d['name'])) === 'others') continue;
+
+                $key = strtolower(trim($d['name']));
+                if (!isset($docs[$key])) {
+                    $missingDocs[] = $d['name'];
+                }
+            }
+        }
+    }
+}
 
 
 ?>
