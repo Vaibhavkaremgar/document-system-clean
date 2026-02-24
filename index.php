@@ -957,7 +957,7 @@ document.getElementById("nameInput").addEventListener("keyup", e => {
 
 // Auto-fill name when family selected
 // When family is selected, load ALL names for that family
-document.getElementById("familyInput").addEventListener("change", e => {
+/*document.getElementById("familyInput").addEventListener("change", e => {
 
     const family = e.target.value.trim();
     const nameList = document.getElementById("nameList");
@@ -1000,7 +1000,65 @@ document.getElementById("familyInput").addEventListener("change", e => {
     }
   });
  */
+document.getElementById("familyInput").addEventListener("change", e => {
 
+    const family = e.target.value.trim();
+    const dropdown = document.getElementById("nameDropdown");
+    const nameInput = document.getElementById("nameInput");
+
+    dropdown.innerHTML = "";
+    nameInput.value = "";
+
+    if (!family) return;
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.length === 0) {
+                dropdown.style.display = "none";
+                return;
+            }
+
+            dropdown.style.display = "block";
+
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "autocomplete-item";
+                div.textContent = item.name;
+
+                div.onclick = () => {
+                    nameInput.value = item.name;
+                    document.getElementById("familyInput").value = item.family;
+                    dropdown.style.display = "none";
+                };
+
+                dropdown.appendChild(div);
+            });
+        })
+        .catch(console.error);
+});
+   if (type === "name") {
+    const dropdown = document.getElementById("nameDropdown");
+    if (!dropdown) return; // 🛡 safety
+
+    dropdown.innerHTML = "";
+    dropdown.style.display = "block";
+
+    data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "autocomplete-item";
+        div.textContent = item.name;
+
+        div.onclick = () => {
+            document.getElementById("nameInput").value = item.name;
+            document.getElementById("familyInput").value = item.family;
+            dropdown.style.display = "none";
+        };
+
+        dropdown.appendChild(div);
+    });
+}
 document.getElementById("othersFiles")?.addEventListener("change", function () {
 
     const list = document.getElementById("othersFileList");
