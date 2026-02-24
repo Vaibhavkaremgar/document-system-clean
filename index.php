@@ -672,6 +672,46 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 .suggestions div:hover {
     background: #f1f1f1;
 }
+   .input-with-arrow {
+    position: relative;
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    user-select: none;
+}
+
+.dropdown-arrow:hover {
+    color: #000;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.suggestions div {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background: #f1f1f1;
+}
 
 
 </style>
@@ -716,7 +756,11 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     required
 >-->
    <div class="autocomplete">
-    <input id="nameInput" name="name" placeholder="Name" autocomplete="off" required>
+    <div class="input-with-arrow">
+        <input id="nameInput" name="name" placeholder="Name" autocomplete="off" readonly required>
+        <span id="nameArrow" class="dropdown-arrow">▼</span>
+    </div>
+
     <div id="nameSuggestions" class="suggestions"></div>
 </div>
 
@@ -957,49 +1001,38 @@ function renderSuggestions(container, items, key, input) {
     container.style.display = 'block';
 }
 
-// FAMILY (G CODE)
-document.getElementById("familyInput").addEventListener("keyup", e => {
-    const value = e.target.value.trim();
-    if (value.length < 1) return;
+// Clear Name when G Code changes
+document.getElementById("familyInput").addEventListener("change", () => {
+    document.getElementById("nameInput").value = '';
+    document.getElementById("nameSuggestions").style.display = 'none';
+});
 
-    fetch("search.php?type=family&q=" + encodeURIComponent(value))
+// Click arrow → load ALL names for this G Code
+document.getElementById("nameArrow").addEventListener("click", () => {
+
+    const family = document.getElementById("familyInput").value.trim();
+    const nameInput = document.getElementById("nameInput");
+    const dropdown = document.getElementById("nameSuggestions");
+
+    if (!family) {
+        alert("Please enter G Code first");
+        return;
+    }
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
         .then(res => res.json())
         .then(data => {
-            renderSuggestions(
-                document.getElementById("familySuggestions"),
-                data,
-                "family",
-                e.target
-            );
+            // show ALL names for this G Code
+            renderSuggestions(dropdown, data, "name", nameInput);
         })
         .catch(console.error);
 });
 
-// NAME
-document.getElementById("nameInput").addEventListener("keyup", e => {
-    const value = e.target.value.trim();
-    const family = document.getElementById("familyInput").value.trim();
-
-    if (value.length < 1 || family.length < 1) return;
-
-    fetch(
-        "search.php?type=family&q=" + encodeURIComponent(family)
-    )
-    .then(res => res.json())
-    .then(data => {
-        // filter names by typed text
-        const filtered = data.filter(item =>
-            item.name.toLowerCase().includes(value.toLowerCase())
-        );
-
-        renderSuggestions(
-            document.getElementById("nameSuggestions"),
-            filtered,
-            "name",
-            e.target
-        );
-    })
-    .catch(console.error);
+document.addEventListener("click", e => {
+    if (!e.target.closest(".autocomplete")) {
+        document.querySelectorAll(".suggestions")
+            .forEach(s => s.style.display = "none");
+    }
 });
 
 // Hide dropdown when clicking outside
