@@ -96,15 +96,22 @@ function getRequiredDocs($dept, $sheet, $id){
 
     $req = [];
 
-    foreach($rows as $r){
+    foreach ($rows as $r) {
 
-        // ✅ if department NOT selected → show ALL docs
-        if(empty($dept) || $r[0] === $dept){
-            $req[] = [
-                'name' => $r[1],
-                'desc' => $r[2] ?? ''
-            ];
+        // ✅ ensure document_type exists
+        if (!isset($r[1]) || trim($r[1]) === '') {
+            continue;
         }
+
+        // ✅ department optional logic
+        if ($dept !== '' && (($r[0] ?? '') !== $dept)) {
+            continue;
+        }
+
+        $req[] = [
+            'name' => trim($r[1]),          // document_type
+            'desc' => trim($r[2] ?? '')     // description
+        ];
     }
 
     return $req;
@@ -202,12 +209,18 @@ function getOrCreatePersonFolder($drive,$personName,$familyFolderId){
 
 if(isset($_POST['upload_all'])){
 
-   $family = trim($_POST['family_code']);
+   /*$family = trim($_POST['family_code']);
    $name   = trim($_POST['name']);
    $dob    = $_POST['dob'];
    $email  = $_POST['email'];
    $mobile = $_POST['mobile'];
-   $gst    = $_POST['gst_no'];
+   $gst    = $_POST['gst_no'];*/
+   $family = trim((string)($_POST['family_code'] ?? ''));
+   $name   = trim((string)($_POST['name'] ?? ''));
+   $dob    = trim((string)($_POST['dob'] ?? ''));
+   $email  = trim((string)($_POST['email'] ?? ''));
+   $mobile = trim((string)($_POST['mobile'] ?? ''));
+   $gst    = trim((string)($_POST['gst_no'] ?? ''));
 
    if(!$family || !$name || !$dob || !$email || !$mobile || !$gst){
     die("All registration fields are mandatory.");
@@ -309,9 +322,12 @@ if(isset($_FILES['documents_others'])){
 
 if(isset($_POST['upload_doc'])){
 
-    $family = $_POST['family_code'] ?? '';
+   /* $family = $_POST['family_code'] ?? '';
     $name   = $_POST['name'];
-    $type   = $_POST['document_type'];
+    $type   = $_POST['document_type'];*/
+   $family = trim((string)($_POST['family_code'] ?? ''));
+   $name   = trim((string)($_POST['name'] ?? ''));
+   $type   = trim((string)($_POST['document_type'] ?? ''));
 
     //registerPersonIfNotExists($family,$name,$sheetService,$SPREADSHEET_ID);
 
@@ -358,8 +374,10 @@ if(isset($_POST['upload_doc'])){
 
 if(isset($_POST['delete_doc'])){
 
-    $fileId = $_POST['file_id'];
-    $family = $_POST['family_code'];
+    /*$fileId = $_POST['file_id'];
+    $family = $_POST['family_code'];*/
+   $fileId = trim((string)($_POST['file_id'] ?? ''));
+   $family = trim((string)($_POST['family_code'] ?? ''));
 
     $drive = getOAuthDriveService();
 
@@ -404,8 +422,8 @@ if(isset($_POST['delete_doc'])){
 
 if(isset($_POST['replace_doc'])){
 
-    $fileId = $_POST['old_file_id'];
-
+    //$fileId = $_POST['old_file_id'];
+    $fileId = trim((string)($_POST['file_id'] ?? ''));
     $drive = getOAuthDriveService();
 
     /* ========= 1. Replace content only ========= */
@@ -513,9 +531,12 @@ $errorMsg = '';
 
 if(isset($_POST['check'])){
 
-    $dept   = trim($_POST['department'] ?? '');
+    /*$dept   = trim($_POST['department'] ?? '');
     $family = trim($_POST['family_code'] ?? '');
-    $name   = trim($_POST['name'] ?? '');
+    $name   = trim($_POST['name'] ?? '');*/
+   $dept   = trim((string)($_POST['department'] ?? ''));
+   $family = trim((string)($_POST['family_code'] ?? ''));
+   $name   = trim((string)($_POST['name'] ?? ''));
 
     $person = getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
 
