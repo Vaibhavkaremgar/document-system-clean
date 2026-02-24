@@ -18,6 +18,65 @@ $rows = $sheetService->spreadsheets_values
     ->getValues() ?? [];
 
 foreach ($rows as $r) {
+
+    if (!isset($r[0], $r[1])) continue;
+
+    $family = trim($r[0]);
+    $name   = trim($r[1]);
+
+    /* =========================
+       FAMILY SEARCH
+       ========================= */
+    if ($type === 'family') {
+
+        // ✅ EXACT match (used when G Code is selected)
+        if (strcasecmp($family, $q) === 0) {
+            $data[] = [
+                'family' => $family,
+                'name'   => $name
+            ];
+        }
+
+        // ✅ PARTIAL match (used while typing)
+        elseif (stripos($family, $q) !== false) {
+            $data[] = [
+                'family' => $family,
+                'name'   => $name
+            ];
+        }
+    }
+
+    /* =========================
+       NAME SEARCH (optional)
+       ========================= */
+    if ($type === 'name' && stripos($name, $q) !== false) {
+        $data[] = [
+            'name'   => $name,
+            'family' => $family
+        ];
+    }
+}
+
+echo json_encode($data);
+/*require_once 'db.php';
+
+header('Content-Type: application/json');
+
+$type = $_GET['type'] ?? '';
+$q    = trim($_GET['q'] ?? '');
+
+$data = [];
+
+if ($q === '') {
+    echo json_encode($data);
+    exit;
+}
+
+$rows = $sheetService->spreadsheets_values
+    ->get($SPREADSHEET_ID, 'persons!A2:B')
+    ->getValues() ?? [];
+
+foreach ($rows as $r) {
     if (!isset($r[0], $r[1])) continue;
 
     $family = trim($r[0]);
@@ -40,4 +99,4 @@ foreach ($rows as $r) {
     }
 }
 
-echo json_encode($data);
+echo json_encode($data);*/
