@@ -975,7 +975,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("search.php?type=family&q=" + encodeURIComponent(family))
             .then(res => res.json())
             .then(data => {
-
+                 console.log("Fetched names:", data);
                 if (!Array.isArray(data) || data.length === 0) {
                     return;
                 }
