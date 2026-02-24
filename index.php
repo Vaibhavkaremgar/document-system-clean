@@ -729,7 +729,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     id="nameSelect"
     name="name"
     required
-    disabled
+    
 >
     <option value="">-- Select Name --</option>
 </select>
@@ -955,21 +955,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const familyInput = document.getElementById("familyInput");
     const nameSelect  = document.getElementById("nameSelect");
 
+    if (!familyInput || !nameSelect) {
+        console.error("Inputs not found");
+        return;
+    }
+
+    // initially disable via JS (not HTML)
+    nameSelect.disabled = true;
+
     familyInput.addEventListener("input", function () {
 
         const family = familyInput.value.trim();
+
         nameSelect.innerHTML = '<option value="">-- Select Name --</option>';
         nameSelect.disabled = true;
 
-        if (!family) return;
+        if (family.length < 2) return;
 
         fetch("search.php?type=family&q=" + encodeURIComponent(family))
             .then(res => res.json())
             .then(data => {
 
-                if (data.length === 0) return;
-
-                nameSelect.disabled = false;
+                if (!Array.isArray(data) || data.length === 0) {
+                    return;
+                }
 
                 data.forEach(item => {
                     const option = document.createElement("option");
@@ -978,75 +987,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     nameSelect.appendChild(option);
                 });
 
+                // ✅ ENABLE CLICK
+                nameSelect.disabled = false;
+
                 // auto-select if only one name
                 if (data.length === 1) {
                     nameSelect.value = data[0].name;
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => console.error("Fetch error:", err));
     });
 
 });
 </script>
-
-/*document.addEventListener("DOMContentLoaded", function () {
-
-    const familyInput = document.getElementById("familyInput");
-    const nameInput   = document.getElementById("nameInput");
-    const familyList  = document.getElementById("familyList");
-    const nameList    = document.getElementById("nameList");
-
-    nameInput.disabled = true;
-
-    // typing G Code
-    familyInput.addEventListener("keyup", function () {
-
-        const q = familyInput.value.trim();
-        if (!q) return;
-
-        fetch("search.php?type=family&q=" + encodeURIComponent(q))
-            .then(res => res.json())
-            .then(data => {
-                familyList.innerHTML = "";
-                data.forEach(item => {
-                    const option = document.createElement("option");
-                    option.value = item.family;
-                    familyList.appendChild(option);
-                });
-            });
-    });
-
-    // 🔥 use INPUT instead of CHANGE
-    familyInput.addEventListener("input", function () {
-
-        const family = familyInput.value.trim();
-        nameList.innerHTML = "";
-        nameInput.value = "";
-        nameInput.disabled = true;
-
-        if (!family) return;
-
-        fetch("search.php?type=family&q=" + encodeURIComponent(family))
-            .then(res => res.json())
-            .then(data => {
-
-                if (data.length === 0) return;
-
-                nameInput.disabled = false;
-
-                data.forEach(item => {
-                    const option = document.createElement("option");
-                    option.value = item.name;
-                    nameList.appendChild(option);
-                });
-
-                // 🔥 force datalist to appear
-                nameInput.focus();
-                nameInput.click();
-            });
-    });
-
-});*/
 
 </body>
 </html>
