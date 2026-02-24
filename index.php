@@ -510,52 +510,6 @@ $requiredDocs=[];
 $missingDocs=[];
 $errorMsg = '';
 
-/*if(isset($_POST['check'])){
-
-    $dept   = trim($_POST['department']);
-    $family = trim($_POST['family_code'] ?? '');
-    $name   = trim($_POST['name'] ?? '');
-
-    $missingDocs = [];
-
-    $person = getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
-
-    /* 🚫 IMPORTANT FIX: invalid combination → show error
-    if(!$person){
-    $errorMsg = "No user found with this G Code and Name";
-    // ❗ DO NOT return; just stop further processing
-} */
-    //else {
-
-    /*$requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
-    $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
-
-    foreach($requiredDocs as $d){
-        if(strtolower(trim($d['name'])) === 'others') continue;
-
-        $key = strtolower(trim($d['name']));
-
-        if(!isset($docs[$key])){
-            $missingDocs[] = $d['name'];
-        }
-    }*/
-//}
-
-
-    // ✅ valid user → continue
-   /* $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
-    $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
-
-    foreach($requiredDocs as $d){
-        if(strtolower(trim($d['name'])) === 'others') continue;
-
-        $key = strtolower(trim($d['name']));
-        if(!isset($docs[$key])){
-            $missingDocs[] = $d['name'];
-        }
-    }
-}*/
-
 if(isset($_POST['check'])){
 
    $dept   = trim((string)($_POST['department'] ?? ''));
@@ -567,16 +521,7 @@ if(isset($_POST['check'])){
     $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
 
-    /*$missingDocs = [];
-
-    foreach($requiredDocs as $d){
-        if(strtolower(trim($d['name'])) === 'others') continue;
-
-        $key = strtolower(trim($d['name']));
-        if(!isset($docs[$key])){
-            $missingDocs[] = $d['name'];
-        }
-    }*/
+    
    $missingDocs = [];
 $seen = [];
 
@@ -749,29 +694,27 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <option>Claims</option>
 </select>
 
-<input
+<!--<input
     id="familyInput"
     name="family_code"
     list="familyList"
     placeholder="G Code"
     autocomplete="off"
     required
->
-<!--<datalist id="familyList"></datalist>-->
+>-->
    <div class="autocomplete">
     <input id="familyInput" name="family_code" placeholder="G Code" autocomplete="off" required>
     <div id="familySuggestions" class="suggestions"></div>
 </div>
 
-<input
+<!--<input
     id="nameInput"
     name="name"
     list="nameList"
     placeholder="Name"
     autocomplete="off"
     required
->
-<!--<datalist id="nameList"></datalist>-->
+>-->
    <div class="autocomplete">
     <input id="nameInput" name="name" placeholder="Name" autocomplete="off" required>
     <div id="nameSuggestions" class="suggestions"></div>
@@ -1035,19 +978,28 @@ document.getElementById("familyInput").addEventListener("keyup", e => {
 // NAME
 document.getElementById("nameInput").addEventListener("keyup", e => {
     const value = e.target.value.trim();
-    if (value.length < 1) return;
+    const family = document.getElementById("familyInput").value.trim();
 
-    fetch("search.php?type=name&q=" + encodeURIComponent(value))
-        .then(res => res.json())
-        .then(data => {
-            renderSuggestions(
-                document.getElementById("nameSuggestions"),
-                data,
-                "name",
-                e.target
-            );
-        })
-        .catch(console.error);
+    if (value.length < 1 || family.length < 1) return;
+
+    fetch(
+        "search.php?type=family&q=" + encodeURIComponent(family)
+    )
+    .then(res => res.json())
+    .then(data => {
+        // filter names by typed text
+        const filtered = data.filter(item =>
+            item.name.toLowerCase().includes(value.toLowerCase())
+        );
+
+        renderSuggestions(
+            document.getElementById("nameSuggestions"),
+            filtered,
+            "name",
+            e.target
+        );
+    })
+    .catch(console.error);
 });
 
 // Hide dropdown when clicking outside
