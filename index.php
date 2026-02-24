@@ -939,15 +939,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const familyList  = document.getElementById("familyList");
     const nameList    = document.getElementById("nameList");
 
-    if (!familyInput || !nameInput || !familyList || !nameList) {
-        console.error("Autocomplete inputs not found in DOM");
-        return;
-    }
-
-    // Disable name until G Code selected
     nameInput.disabled = true;
 
-    /* ===== G CODE AUTOCOMPLETE ===== */
+    // typing G Code
     familyInput.addEventListener("keyup", function () {
 
         const q = familyInput.value.trim();
@@ -962,12 +956,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     option.value = item.family;
                     familyList.appendChild(option);
                 });
-            })
-            .catch(err => console.error("Family fetch error:", err));
+            });
     });
 
-    /* ===== LOAD NAMES WHEN G CODE SELECTED ===== */
-    familyInput.addEventListener("change", function () {
+    // 🔥 use INPUT instead of CHANGE
+    familyInput.addEventListener("input", function () {
 
         const family = familyInput.value.trim();
         nameList.innerHTML = "";
@@ -980,10 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(data => {
 
-                if (data.length === 0) {
-                    console.warn("No names for family:", family);
-                    return;
-                }
+                if (data.length === 0) return;
 
                 nameInput.disabled = false;
 
@@ -992,8 +982,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     option.value = item.name;
                     nameList.appendChild(option);
                 });
-            })
-            .catch(err => console.error("Name fetch error:", err));
+
+                // 🔥 force datalist to appear
+                nameInput.focus();
+                nameInput.click();
+            });
     });
 
 });
