@@ -88,10 +88,30 @@ function registerPersonIfNotExists(
     return $docs;
 }
 
+function getRequiredDocs($dept, $sheet, $id){
+
+    $rows = $sheet->spreadsheets_values
+        ->get($id,'departments_master!A2:C')
+        ->getValues() ?? [];
+
+    $req = [];
+
+    foreach($rows as $r){
+
+        // ✅ if department NOT selected → show ALL docs
+        if(empty($dept) || $r[0] === $dept){
+            $req[] = [
+                'name' => $r[1],
+                'desc' => $r[2] ?? ''
+            ];
+        }
+    }
+
+    return $req;
+}
 
 
-
-function getRequiredDocs($dept,$sheet,$id){
+/*function getRequiredDocs($dept,$sheet,$id){
 
     $rows = $sheet->spreadsheets_values
         ->get($id,'departments_master!A2:C')
@@ -109,7 +129,7 @@ function getRequiredDocs($dept,$sheet,$id){
     }
 
     return $req;
-}
+}*/
 
 
 
@@ -445,7 +465,7 @@ $requiredDocs=[];
 $missingDocs=[];
 $errorMsg = '';
 
-if(isset($_POST['check'])){
+/*if(isset($_POST['check'])){
 
     $dept   = trim($_POST['department']);
     $family = trim($_POST['family_code'] ?? '');
@@ -462,7 +482,7 @@ if(isset($_POST['check'])){
 } */
     //else {
 
-    $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+    /*$requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
 
     foreach($requiredDocs as $d){
@@ -473,13 +493,36 @@ if(isset($_POST['check'])){
         if(!isset($docs[$key])){
             $missingDocs[] = $d['name'];
         }
-    }
+    }*/
 //}
 
 
     // ✅ valid user → continue
+   /* $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+    $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
+
+    foreach($requiredDocs as $d){
+        if(strtolower(trim($d['name'])) === 'others') continue;
+
+        $key = strtolower(trim($d['name']));
+        if(!isset($docs[$key])){
+            $missingDocs[] = $d['name'];
+        }
+    }
+}*/
+
+if(isset($_POST['check'])){
+
+    $dept   = trim($_POST['department'] ?? '');
+    $family = trim($_POST['family_code'] ?? '');
+    $name   = trim($_POST['name'] ?? '');
+
+    $person = getPerson($family,$name,$sheetService,$SPREADSHEET_ID);
+
     $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
+
+    $missingDocs = [];
 
     foreach($requiredDocs as $d){
         if(strtolower(trim($d['name'])) === 'others') continue;
@@ -490,7 +533,6 @@ if(isset($_POST['check'])){
         }
     }
 }
-
 
 
 ?>
@@ -609,7 +651,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 <h2>Department Document System</h2>
 
 <form method="post">
-<select name="department" required>
+<select name="department">
 <option value="">-- Select Department --</option>
 <option>Life Insurance</option>
 <option>Health Insurance</option>
