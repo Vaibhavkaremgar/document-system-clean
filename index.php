@@ -970,8 +970,8 @@ document.addEventListener("DOMContentLoaded", function () {
         nameSelect.innerHTML = '<option value="">-- Select Name --</option>';
         nameSelect.disabled = true;
 
-        if (family.length < 2) return;
-
+       // if (family.length < 2) return;
+        if (family.length === 0) return;
         fetch("search.php?type=family&q=" + encodeURIComponent(family))
             .then(res => res.json())
             .then(data => {
