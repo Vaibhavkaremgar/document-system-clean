@@ -445,7 +445,7 @@ $requiredDocs=[];
 $missingDocs=[];
 $errorMsg = '';
 
-if(isset($_POST['check'])){
+/*if(isset($_POST['check'])){
 
     $dept   = trim($_POST['department']);
     $family = trim($_POST['family_code'] ?? '');
@@ -462,7 +462,7 @@ if(isset($_POST['check'])){
 } */
     //else {
 
-    $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
+   /* $requiredDocs = getRequiredDocs($dept,$sheetService,$SPREADSHEET_ID);
     $docs = getDocuments($family,$name,$sheetService,$SPREADSHEET_ID);
 
     foreach($requiredDocs as $d){
@@ -473,8 +473,42 @@ if(isset($_POST['check'])){
         if(!isset($docs[$key])){
             $missingDocs[] = $d['name'];
         }
-    }
+    }*/
 //}
+if (isset($_POST['check'])) {
+
+    $dept   = trim($_POST['department'] ?? '');
+    $family = trim($_POST['family_code'] ?? '');
+    $name   = trim($_POST['name'] ?? '');
+
+    $person = getPerson($family, $name, $sheetService, $SPREADSHEET_ID);
+
+    if (!$person) {
+        // ❌ Invalid G Code + Name combination
+        $errorMsg = "No user found with this G Code and Name";
+    } else {
+        // ✅ User exists → always fetch documents
+        $docs = getDocuments($family, $name, $sheetService, $SPREADSHEET_ID);
+
+        $missingDocs = [];
+        $requiredDocs = [];
+
+        // ✅ Only validate documents IF department is selected
+        if (!empty($dept)) {
+
+            $requiredDocs = getRequiredDocs($dept, $sheetService, $SPREADSHEET_ID);
+
+            foreach ($requiredDocs as $d) {
+                if (strtolower(trim($d['name'])) === 'others') continue;
+
+                $key = strtolower(trim($d['name']));
+                if (!isset($docs[$key])) {
+                    $missingDocs[] = $d['name'];
+                }
+            }
+        }
+    }
+}
 
 
     // ✅ valid user → continue
@@ -610,7 +644,8 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 
 <form method="post">
 <select name="department" required>
-<option value="">-- Select Department --</option>
+<!--<option value="">-- Select Department --</option>-->
+<option value="">-- Select Department (Optional) --</option>
 <option>Life Insurance</option>
 <option>Health Insurance</option>
 <option>Motor Insurance</option>
@@ -894,8 +929,32 @@ document.getElementById("familyInput").addEventListener("keyup", e => {
 });
 
 // When typing name → suggest family codes
-document.getElementById("nameInput").addEventListener("keyup", e => {
+/*document.getElementById("nameInput").addEventListener("keyup", e => {
     fetchSuggestions("name", e.target.value);
+});*/
+   document.getElementById("nameInput").addEventListener("keyup", e => {
+
+    const family = document.getElementById("familyInput").value.trim();
+    if (!family) return; // ⛔ must select G Code first
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
+        .then(res => res.json())
+        .then(data => {
+
+            const list = document.getElementById("nameList");
+            list.innerHTML = "";
+
+            data.forEach(item => {
+                if (
+                    item.name.toLowerCase()
+                        .includes(e.target.value.toLowerCase())
+                ) {
+                    const option = document.createElement("option");
+                    option.value = item.name;
+                    list.appendChild(option);
+                }
+            });
+        });
 });
 
 // Auto-fill name when family selected
