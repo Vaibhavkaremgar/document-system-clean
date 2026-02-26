@@ -1055,6 +1055,32 @@ document.getElementById("othersFiles")?.addEventListener("change", function () {
     }
 });
 </script>
+   <script>
+// Show names when Name field gets focus or mouse enters
+function loadNamesForFamily() {
+    const family = document.getElementById("familyInput").value.trim();
+    const nameInput = document.getElementById("nameInput");
+    const dropdown = document.getElementById("nameSuggestions");
+
+    if (!family) {
+        dropdown.style.display = "none";
+        return;
+    }
+
+    fetch("search.php?type=family&q=" + encodeURIComponent(family))
+        .then(res => res.json())
+        .then(data => {
+            renderSuggestions(dropdown, data, "name", nameInput);
+        })
+        .catch(console.error);
+}
+
+// 👉 Trigger on focus
+document.getElementById("nameInput").addEventListener("focus", loadNamesForFamily);
+
+// 👉 Optional: also trigger when mouse enters
+document.getElementById("nameInput").addEventListener("mouseenter", loadNamesForFamily);
+</script>
 </body>
 </html>
 
