@@ -675,7 +675,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
    .input-with-arrow {
     position: relative;
 }
-/*
+
 .dropdown-arrow {
     position: absolute;
     right: 14px;
@@ -690,7 +690,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
 .dropdown-arrow:hover {
     color: #000;
 }
-*/
+
 .suggestions {
     position: absolute;
     top: 100%;
