@@ -675,7 +675,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
    .input-with-arrow {
     position: relative;
 }
-
+/*
 .dropdown-arrow {
     position: absolute;
     right: 14px;
@@ -686,7 +686,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
     color: #555;
     user-select: none;
 }
-
+*/
 .dropdown-arrow:hover {
     color: #000;
 }
@@ -758,7 +758,7 @@ button{padding:6px 12px;border:none;border-radius:6px;background:#1976d2;color:w
    <div class="autocomplete">
     <div class="input-with-arrow">
         <input id="nameInput" name="name" placeholder="Name" autocomplete="off" readonly required>
-        <span id="nameArrow" class="dropdown-arrow">▼</span>
+       <!-- <span id="nameArrow" class="dropdown-arrow">▼</span> -->
     </div>
 
     <div id="nameSuggestions" class="suggestions"></div>
